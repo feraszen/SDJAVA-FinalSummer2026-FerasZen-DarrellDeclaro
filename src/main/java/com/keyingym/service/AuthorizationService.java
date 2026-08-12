@@ -123,4 +123,15 @@ public class AuthorizationService {
                 || role == UserRole.TRAINER
                 || role == UserRole.MEMBER;
     }
+
+    /**
+     * Checks whether the role can export reports.
+     *
+     * @param role the user's role
+     * @return true only for Admin
+     */
+    public boolean canExportReports(UserRole role) {
+        return role == UserRole.ADMIN;
+    }
+
 }

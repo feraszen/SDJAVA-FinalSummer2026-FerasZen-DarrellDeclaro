@@ -1,9 +1,9 @@
 package com.keyingym.service;
 
-import com.keyingym.model.UserRole;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import com.keyingym.model.UserRole;
 
 /**
  * Builds the console menu options available to each user role.
@@ -15,6 +15,10 @@ public class RoleMenuService {
 
     private final AuthorizationService authorizationService;
 
+    /**
+     * Creates the menu service with the application's
+     * authorization service.
+     */
     public RoleMenuService() {
         this.authorizationService = new AuthorizationService();
     }
@@ -33,7 +37,11 @@ public class RoleMenuService {
             return options;
         }
 
+        /*
+         * Administrator menu options.
+         */
         if (role == UserRole.ADMIN) {
+
             if (authorizationService.canViewAllUsers(role)) {
                 options.add("View All Users");
             }
@@ -53,9 +61,17 @@ public class RoleMenuService {
             if (authorizationService.canManageWorkoutClasses(role)) {
                 options.add("Manage Workout Classes");
             }
+
+            if (authorizationService.canExportReports(role)) {
+                options.add("Export Reports");
+            }
         }
 
+        /*
+         * Trainer menu options.
+         */
         if (role == UserRole.TRAINER) {
+
             if (authorizationService.canViewAssignedClasses(role)) {
                 options.add("View Assigned Classes");
             }
@@ -73,7 +89,11 @@ public class RoleMenuService {
             }
         }
 
+        /*
+         * Member menu options.
+         */
         if (role == UserRole.MEMBER) {
+
             if (authorizationService.canViewOwnMembership(role)) {
                 options.add("View My Membership");
             }
@@ -95,6 +115,9 @@ public class RoleMenuService {
             }
         }
 
+        /*
+         * Logout is available to every authenticated role.
+         */
         options.add("Logout");
 
         return options;
