@@ -1,11 +1,12 @@
 package com.keyingym;
 
+import java.util.List;
+import java.util.Scanner;
+
+import com.keyingym.config.AppLogger;
 import com.keyingym.model.User;
 import com.keyingym.service.RoleMenuService;
 import com.keyingym.service.UserService;
-
-import java.util.List;
-import java.util.Scanner;
 
 /**
  * Main console application for the Gym Management System.
@@ -51,6 +52,8 @@ public class ConsoleApplication {
      * Starts the console application.
      */
     public void run() {
+
+        AppLogger.info("System startup.");
 
         System.out.println("=================================");
         System.out.println("     GYM MANAGEMENT SYSTEM");
