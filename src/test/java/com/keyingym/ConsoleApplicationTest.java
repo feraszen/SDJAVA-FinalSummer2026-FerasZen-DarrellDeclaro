@@ -1,11 +1,5 @@
 package com.keyingym;
 
-import com.keyingym.model.User;
-import com.keyingym.model.UserRole;
-import com.keyingym.service.RoleMenuService;
-import com.keyingym.service.UserService;
-import org.junit.jupiter.api.Test;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -13,6 +7,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
+
+import com.keyingym.model.User;
+import com.keyingym.model.UserRole;
+import com.keyingym.service.RoleMenuService;
+import com.keyingym.service.UserService;
 
 class ConsoleApplicationTest {
 
@@ -43,49 +43,20 @@ class ConsoleApplicationTest {
             }
         };
 
-        String input = "testuser\npassword123\n";
-
-        Scanner scanner = new Scanner(
-                new ByteArrayInputStream(
-                        input.getBytes(StandardCharsets.UTF_8)
-                )
+        String output = runApplication(
+                fakeUserService,
+                "testuser\npassword123\n"
         );
 
-        ByteArrayOutputStream output =
-                new ByteArrayOutputStream();
-
-        PrintStream originalOut = System.out;
-
-        try {
-            System.setOut(
-                    new PrintStream(output, true, StandardCharsets.UTF_8)
-            );
-
-            ConsoleApplication application =
-                    new ConsoleApplication(
-                            fakeUserService,
-                            new RoleMenuService(),
-                            scanner
-                    );
-
-            application.run();
-
-        } finally {
-            System.setOut(originalOut);
-        }
-
-        String consoleOutput =
-                output.toString(StandardCharsets.UTF_8);
-
-        assertTrue(consoleOutput.contains("Login successful."));
-        assertTrue(consoleOutput.contains("Welcome, testuser!"));
-        assertTrue(consoleOutput.contains("Role: MEMBER"));
-        assertTrue(consoleOutput.contains("View My Membership"));
-        assertTrue(consoleOutput.contains("View My Expenses"));
-        assertTrue(consoleOutput.contains("Browse Workout Classes"));
-        assertTrue(consoleOutput.contains("Browse Merchandise"));
-        assertTrue(consoleOutput.contains("Purchase Membership"));
-        assertTrue(consoleOutput.contains("Logout"));
+        assertTrue(output.contains("Login successful."));
+        assertTrue(output.contains("Welcome, testuser!"));
+        assertTrue(output.contains("Role: MEMBER"));
+        assertTrue(output.contains("View My Membership"));
+        assertTrue(output.contains("View My Expenses"));
+        assertTrue(output.contains("Browse Workout Classes"));
+        assertTrue(output.contains("Browse Merchandise"));
+        assertTrue(output.contains("Purchase Membership"));
+        assertTrue(output.contains("Logout"));
     }
 
     @Test
@@ -101,7 +72,26 @@ class ConsoleApplicationTest {
             }
         };
 
-        String input = "wronguser\nwrongpassword\n";
+        String output = runApplication(
+                fakeUserService,
+                "wronguser\nwrongpassword\n"
+        );
+
+        assertTrue(
+                output.contains(
+                        "Login failed. Exiting application."
+                )
+        );
+    }
+
+    /**
+     * Runs the console application with simulated input
+     * and captures the console output.
+     */
+    private String runApplication(
+            UserService userService,
+            String input
+    ) {
 
         Scanner scanner = new Scanner(
                 new ByteArrayInputStream(
@@ -116,12 +106,16 @@ class ConsoleApplicationTest {
 
         try {
             System.setOut(
-                    new PrintStream(output, true, StandardCharsets.UTF_8)
+                    new PrintStream(
+                            output,
+                            true,
+                            StandardCharsets.UTF_8
+                    )
             );
 
             ConsoleApplication application =
                     new ConsoleApplication(
-                            fakeUserService,
+                            userService,
                             new RoleMenuService(),
                             scanner
                     );
@@ -130,13 +124,9 @@ class ConsoleApplicationTest {
 
         } finally {
             System.setOut(originalOut);
+            scanner.close();
         }
 
-        String consoleOutput =
-                output.toString(StandardCharsets.UTF_8);
-
-        assertTrue(consoleOutput.contains(
-                "Login failed. Exiting application."
-        ));
+        return output.toString(StandardCharsets.UTF_8);
     }
 }

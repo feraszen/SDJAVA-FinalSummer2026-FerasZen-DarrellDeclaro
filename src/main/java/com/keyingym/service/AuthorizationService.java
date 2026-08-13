@@ -51,35 +51,34 @@ public class AuthorizationService {
     }
 
     /**
-     * Checks whether the role can create, update, and delete workout classes.
+     * Checks whether the role can create, update, and delete workoutclasses.
      *
      * @param role the user's role
      * @return true for Admin and Trainer
      */
     public boolean canManageWorkoutClasses(UserRole role) {
-        return role == UserRole.ADMIN || role == UserRole.TRAINER;
+        return role == UserRole.ADMIN
+                || role == UserRole.TRAINER;
     }
 
     /**
      * Checks whether the role can view classes assigned to the trainer.
      *
      * @param role the user's role
-     * @return true for Admin and Trainer
+     * @return true only for Trainer
      */
     public boolean canViewAssignedClasses(UserRole role) {
-        return role == UserRole.ADMIN || role == UserRole.TRAINER;
+        return role == UserRole.TRAINER;
     }
 
     /**
      * Checks whether the role can browse available workout classes.
      *
      * @param role the user's role
-     * @return true for all authenticated roles
+     * @return true only for Member
      */
     public boolean canBrowseWorkoutClasses(UserRole role) {
-        return role == UserRole.ADMIN
-                || role == UserRole.TRAINER
-                || role == UserRole.MEMBER;
+        return role == UserRole.MEMBER;
     }
 
     /**
@@ -89,7 +88,8 @@ public class AuthorizationService {
      * @return true for Trainer and Member
      */
     public boolean canPurchaseMembership(UserRole role) {
-        return role == UserRole.TRAINER || role == UserRole.MEMBER;
+        return role == UserRole.TRAINER
+                || role == UserRole.MEMBER;
     }
 
     /**
@@ -99,28 +99,30 @@ public class AuthorizationService {
      * @return true for Trainer and Member
      */
     public boolean canViewOwnMembership(UserRole role) {
-        return role == UserRole.TRAINER || role == UserRole.MEMBER;
+        return role == UserRole.TRAINER
+                || role == UserRole.MEMBER;
     }
 
     /**
-     * Checks whether the role can view its own expenses.
+     * Checks whether the role can view its own membership expenses.
      *
      * @param role the user's role
      * @return true for Trainer and Member
      */
     public boolean canViewOwnExpenses(UserRole role) {
-        return role == UserRole.TRAINER || role == UserRole.MEMBER;
+        return role == UserRole.TRAINER
+                || role == UserRole.MEMBER;
     }
 
     /**
-     * Checks whether the role can browse merchandise.
+     * Checks whether the role can browse merchandise available
+     * for purchase.
      *
      * @param role the user's role
-     * @return true for all authenticated roles
+     * @return true for Trainer and Member
      */
     public boolean canBrowseMerchandise(UserRole role) {
-        return role == UserRole.ADMIN
-                || role == UserRole.TRAINER
+        return role == UserRole.TRAINER
                 || role == UserRole.MEMBER;
     }
 
@@ -133,5 +135,4 @@ public class AuthorizationService {
     public boolean canExportReports(UserRole role) {
         return role == UserRole.ADMIN;
     }
-
 }

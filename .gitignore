@@ -15,4 +15,4 @@ Thumbs.db
 
 # Local environment and secrets
 .env
-.env.*
+.env.*app.log

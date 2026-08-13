@@ -1,13 +1,13 @@
 package com.keyingym.service;
 
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+
 import com.keyingym.dao.MerchandiseDAO;
 import com.keyingym.dao.MerchandisePurchaseDAO;
 import com.keyingym.model.Merchandise;
 import com.keyingym.model.MerchandisePurchase;
-
-import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Provides business operations for gym merchandise and purchases.
@@ -47,7 +47,14 @@ public class MerchandiseService {
      * @return list of merchandise
      */
     public List<Merchandise> getAvailableMerchandise() {
-        return merchandiseDAO.getAllMerchandise();
+        List<Merchandise> merchandise =
+                merchandiseDAO.getAllMerchandise();
+
+        if (merchandise == null) {
+            return Collections.emptyList();
+        }
+
+        return merchandise;
     }
 
     /**
@@ -65,15 +72,55 @@ public class MerchandiseService {
     }
 
     /**
-     * Purchases merchandise for a user.
+     * Adds a merchandise item.
      *
-     * The current merchandise price is copied into the purchase.
-     * The inventory is reduced by the purchased quantity.
+     * @param merchandise merchandise item
+     * @return true when successfully added
+     */
+    public boolean addMerchandise(Merchandise merchandise) {
+        if (!isValidMerchandise(merchandise)) {
+            return false;
+        }
+
+        return merchandiseDAO.addMerchandise(merchandise);
+    }
+
+    /**
+     * Updates an existing merchandise item.
+     *
+     * @param merchandise merchandise item
+     * @return true when successfully updated
+     */
+    public boolean updateMerchandise(Merchandise merchandise) {
+        if (!isValidMerchandise(merchandise)
+                || merchandise.getMerchId() <= 0) {
+            return false;
+        }
+
+        return merchandiseDAO.updateMerchandise(merchandise);
+    }
+
+    /**
+     * Deletes merchandise by ID.
+     *
+     * @param merchId merchandise ID
+     * @return true when successfully deleted
+     */
+    public boolean deleteMerchandise(int merchId) {
+        if (merchId <= 0) {
+            return false;
+        }
+
+        return merchandiseDAO.deleteMerchandise(merchId);
+    }
+
+    /**
+     * Purchases merchandise for a user.
      *
      * @param userId user making the purchase
      * @param merchId merchandise being purchased
      * @param quantity quantity to purchase
-     * @return true when the purchase is successfully recorded
+     * @return true when successfully purchased
      */
     public boolean purchaseMerchandise(
             int userId,
@@ -130,6 +177,44 @@ public class MerchandiseService {
             return Collections.emptyList();
         }
 
-        return purchaseDAO.getPurchasesByUserId(userId);
+        List<MerchandisePurchase> purchases =
+                purchaseDAO.getPurchasesByUserId(userId);
+
+        if (purchases == null) {
+            return Collections.emptyList();
+        }
+
+        return purchases;
+    }
+
+    /**
+     * Validates merchandise information.
+     */
+    private boolean isValidMerchandise(Merchandise merchandise) {
+        if (merchandise == null) {
+            return false;
+        }
+
+        if (isBlank(merchandise.getProductName())) {
+            return false;
+        }
+
+        if (isBlank(merchandise.getType())) {
+            return false;
+        }
+
+        if (merchandise.getPrice() == null
+                || merchandise.getPrice().signum() < 0) {
+            return false;
+        }
+
+        return merchandise.getCurrentStock() >= 0;
+    }
+
+    /**
+     * Checks whether a string is null or blank.
+     */
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 }

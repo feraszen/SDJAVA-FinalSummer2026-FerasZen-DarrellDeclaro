@@ -1,13 +1,13 @@
 package com.keyingym.service;
 
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+
 import com.keyingym.dao.MembershipDAO;
 import com.keyingym.dao.MembershipPurchaseDAO;
 import com.keyingym.model.Membership;
 import com.keyingym.model.MembershipPurchase;
-
-import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Provides business operations for gym memberships and membership purchases.
@@ -47,7 +47,14 @@ public class MembershipService {
      * @return list of membership plans
      */
     public List<Membership> getAvailableMemberships() {
-        return membershipDAO.getAllMemberships();
+        List<Membership> memberships =
+                membershipDAO.getAllMemberships();
+
+        if (memberships == null) {
+            return Collections.emptyList();
+        }
+
+        return memberships;
     }
 
     /**
@@ -66,9 +73,6 @@ public class MembershipService {
 
     /**
      * Purchases a membership for a user.
-     *
-     * The membership price is copied into the purchase so the purchase
-     * retains the price that was actually paid.
      *
      * @param userId user making the purchase
      * @param membershipId membership being purchased
@@ -113,6 +117,29 @@ public class MembershipService {
             return Collections.emptyList();
         }
 
-        return purchaseDAO.getPurchasesByUserId(userId);
+        List<MembershipPurchase> purchases =
+                purchaseDAO.getPurchasesByUserId(userId);
+
+        if (purchases == null) {
+            return Collections.emptyList();
+        }
+
+        return purchases;
+    }
+
+    /**
+     * Returns all membership purchases in the system.
+     *
+     * @return all membership purchases
+     */
+    public List<MembershipPurchase> getAllPurchases() {
+        List<MembershipPurchase> purchases =
+                purchaseDAO.getAllMembershipPurchases();
+
+        if (purchases == null) {
+            return Collections.emptyList();
+        }
+
+        return purchases;
     }
 }

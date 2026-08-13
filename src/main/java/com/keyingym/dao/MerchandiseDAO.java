@@ -1,14 +1,15 @@
 package com.keyingym.dao;
 
-import com.keyingym.config.DatabaseConnection;
-import com.keyingym.model.Merchandise;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.keyingym.config.AppLogger;
+import com.keyingym.config.DatabaseConnection;
+import com.keyingym.model.Merchandise;
 
 /**
  * Data Access Object for gym merchandise.
@@ -33,7 +34,10 @@ public class MerchandiseDAO {
             return statement.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            AppLogger.error(
+                    "Database transaction error in MerchandiseDAO.addMerchandise.",
+                    e
+            );
             return false;
         }
     }
@@ -57,7 +61,10 @@ public class MerchandiseDAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            AppLogger.error(
+                    "Database transaction error in MerchandiseDAO.findById.",
+                    e
+            );
         }
 
         return null;
@@ -81,7 +88,10 @@ public class MerchandiseDAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            AppLogger.error(
+                    "Database transaction error in MerchandiseDAO.getAllMerchandise.",
+                    e
+            );
         }
 
         return merchandiseItems;
@@ -109,7 +119,10 @@ public class MerchandiseDAO {
             return statement.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            AppLogger.error(
+                    "Database transaction error in MerchandiseDAO.updateMerchandise.",
+                    e
+            );
             return false;
         }
     }
@@ -125,19 +138,38 @@ public class MerchandiseDAO {
             return statement.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            AppLogger.error(
+                    "Database transaction error in MerchandiseDAO.deleteMerchandise.",
+                    e
+            );
             return false;
         }
     }
 
-    private Merchandise mapMerchandise(ResultSet resultSet) throws SQLException {
+    private Merchandise mapMerchandise(ResultSet resultSet)
+            throws SQLException {
+
         Merchandise merchandise = new Merchandise();
 
-        merchandise.setMerchId(resultSet.getInt("merch_id"));
-        merchandise.setProductName(resultSet.getString("product_name"));
-        merchandise.setType(resultSet.getString("type"));
-        merchandise.setPrice(resultSet.getBigDecimal("price"));
-        merchandise.setCurrentStock(resultSet.getInt("current_stock"));
+        merchandise.setMerchId(
+                resultSet.getInt("merch_id")
+        );
+
+        merchandise.setProductName(
+                resultSet.getString("product_name")
+        );
+
+        merchandise.setType(
+                resultSet.getString("type")
+        );
+
+        merchandise.setPrice(
+                resultSet.getBigDecimal("price")
+        );
+
+        merchandise.setCurrentStock(
+                resultSet.getInt("current_stock")
+        );
 
         return merchandise;
     }

@@ -1,10 +1,10 @@
 package com.keyingym.service;
 
-import com.keyingym.model.UserRole;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
+
+import com.keyingym.model.UserRole;
 
 class AuthorizationServiceTest {
 
@@ -18,6 +18,8 @@ class AuthorizationServiceTest {
         assertTrue(authorizationService.canViewMembershipRevenue(UserRole.ADMIN));
         assertTrue(authorizationService.canManageMerchandise(UserRole.ADMIN));
         assertTrue(authorizationService.canManageWorkoutClasses(UserRole.ADMIN));
+
+        assertTrue(authorizationService.canExportReports(UserRole.ADMIN));
     }
 
     @Test
@@ -26,6 +28,7 @@ class AuthorizationServiceTest {
         assertFalse(authorizationService.canDeleteUsers(UserRole.TRAINER));
         assertFalse(authorizationService.canViewMembershipRevenue(UserRole.TRAINER));
         assertFalse(authorizationService.canManageMerchandise(UserRole.TRAINER));
+        assertFalse(authorizationService.canExportReports(UserRole.TRAINER));
 
         assertTrue(authorizationService.canManageWorkoutClasses(UserRole.TRAINER));
         assertTrue(authorizationService.canViewAssignedClasses(UserRole.TRAINER));
@@ -43,6 +46,7 @@ class AuthorizationServiceTest {
         assertFalse(authorizationService.canManageMerchandise(UserRole.MEMBER));
         assertFalse(authorizationService.canManageWorkoutClasses(UserRole.MEMBER));
         assertFalse(authorizationService.canViewAssignedClasses(UserRole.MEMBER));
+        assertFalse(authorizationService.canExportReports(UserRole.MEMBER));
 
         assertTrue(authorizationService.canBrowseWorkoutClasses(UserRole.MEMBER));
         assertTrue(authorizationService.canPurchaseMembership(UserRole.MEMBER));
@@ -52,16 +56,32 @@ class AuthorizationServiceTest {
     }
 
     @Test
-    void allRolesShouldBeAbleToBrowseWorkoutClasses() {
-        assertTrue(authorizationService.canBrowseWorkoutClasses(UserRole.ADMIN));
-        assertTrue(authorizationService.canBrowseWorkoutClasses(UserRole.TRAINER));
-        assertTrue(authorizationService.canBrowseWorkoutClasses(UserRole.MEMBER));
+    void rolesShouldHaveCorrectWorkoutClassBrowsePermissions() {
+        assertFalse(
+                authorizationService.canBrowseWorkoutClasses(UserRole.ADMIN)
+        );
+
+        assertFalse(
+                authorizationService.canBrowseWorkoutClasses(UserRole.TRAINER)
+        );
+
+        assertTrue(
+                authorizationService.canBrowseWorkoutClasses(UserRole.MEMBER)
+        );
     }
 
     @Test
-    void allRolesShouldBeAbleToBrowseMerchandise() {
-        assertTrue(authorizationService.canBrowseMerchandise(UserRole.ADMIN));
-        assertTrue(authorizationService.canBrowseMerchandise(UserRole.TRAINER));
-        assertTrue(authorizationService.canBrowseMerchandise(UserRole.MEMBER));
+    void rolesShouldHaveCorrectMerchandiseBrowsePermissions() {
+        assertFalse(
+                authorizationService.canBrowseMerchandise(UserRole.ADMIN)
+        );
+
+        assertTrue(
+                authorizationService.canBrowseMerchandise(UserRole.TRAINER)
+        );
+
+        assertTrue(
+                authorizationService.canBrowseMerchandise(UserRole.MEMBER)
+        );
     }
 }
