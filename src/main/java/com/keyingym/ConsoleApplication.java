@@ -27,94 +27,46 @@ import com.keyingym.service.WorkoutClassService;
  * and application-level report export handling.
  */
 public class ConsoleApplication {
-
     private final UserService userService;
     private final RoleMenuService roleMenuService;
     private final ReportExportService reportExportService;
     private final MembershipService membershipService;
-    private final MerchandiseService merchandiseService;
-    private final WorkoutClassService workoutClassService;
     private final ConsoleInput input;
-
     private final AdminConsole adminConsole;
     private final MemberConsole memberConsole;
     private final MerchandiseConsole merchandiseConsole;
     private final WorkoutClassConsole workoutClassConsole;
 
     public ConsoleApplication() {
-        this(
-                new UserService(),
-                new RoleMenuService(),
-                new ReportExportService(),
-                new MembershipService(),
-                new MerchandiseService(),
-                new WorkoutClassService(),
-                new Scanner(System.in)
-        );
+        this(new UserService(), new RoleMenuService(), new ReportExportService(),
+                new MembershipService(), new MerchandiseService(), new WorkoutClassService(), new Scanner(System.in));
     }
 
-    ConsoleApplication(
-            UserService userService,
-            RoleMenuService roleMenuService,
-            ReportExportService reportExportService,
-            MembershipService membershipService,
-            MerchandiseService merchandiseService,
-            WorkoutClassService workoutClassService,
-            Scanner scanner
-    ) {
+    ConsoleApplication(UserService userService, RoleMenuService roleMenuService,
+                       ReportExportService reportExportService, MembershipService membershipService,
+                       MerchandiseService merchandiseService, WorkoutClassService workoutClassService,
+                       Scanner scanner) {
         this.userService = userService;
         this.roleMenuService = roleMenuService;
         this.reportExportService = reportExportService;
         this.membershipService = membershipService;
-        this.merchandiseService = merchandiseService;
-        this.workoutClassService = workoutClassService;
         this.input = new ConsoleInput(scanner);
-
-        this.merchandiseConsole = new MerchandiseConsole(
-                merchandiseService,
-                input
-        );
-        this.workoutClassConsole = new WorkoutClassConsole(
-                workoutClassService,
-                input
-        );
-        this.adminConsole = new AdminConsole(
-                userService,
-                membershipService,
-                merchandiseConsole,
-                workoutClassConsole,
-                input
-        );
-        this.memberConsole = new MemberConsole(
-                membershipService,
-                merchandiseService,
-                merchandiseConsole,
-                input
-        );
+        this.merchandiseConsole = new MerchandiseConsole(merchandiseService, input);
+        this.workoutClassConsole = new WorkoutClassConsole(workoutClassService, input);
+        this.adminConsole = new AdminConsole(userService, membershipService,
+                merchandiseConsole, workoutClassConsole, input);
+        this.memberConsole = new MemberConsole(membershipService, merchandiseService,
+                merchandiseConsole, input);
     }
 
-    /**
-     * Backward-compatible constructor used by existing tests.
-     */
-    ConsoleApplication(
-            UserService userService,
-            RoleMenuService roleMenuService,
-            Scanner scanner
-    ) {
-        this(
-                userService,
-                roleMenuService,
-                new ReportExportService(),
-                new MembershipService(),
-                new MerchandiseService(),
-                new WorkoutClassService(),
-                scanner
-        );
+    /** Backward-compatible constructor used by existing tests. */
+    ConsoleApplication(UserService userService, RoleMenuService roleMenuService, Scanner scanner) {
+        this(userService, roleMenuService, new ReportExportService(), new MembershipService(),
+                new MerchandiseService(), new WorkoutClassService(), scanner);
     }
 
     public void run() {
         AppLogger.info("System startup.");
-
         System.out.println("=================================");
         System.out.println("     GYM MANAGEMENT SYSTEM");
         System.out.println("=================================");
@@ -129,7 +81,6 @@ public class ConsoleApplication {
         System.out.println("Login successful.");
         System.out.println("Welcome, " + authenticatedUser.getUsername() + "!");
         System.out.println("Role: " + authenticatedUser.getRole());
-
         displayMenu(authenticatedUser);
     }
 
@@ -140,7 +91,7 @@ public class ConsoleApplication {
 
         System.out.print("Password: ");
         if (!input.hasNextLine()) return null;
-        String password = input.readLine();
+        String password = input.readRawLine();
 
         User authenticatedUser = userService.authenticate(username, password);
         if (authenticatedUser == null) {
@@ -152,7 +103,6 @@ public class ConsoleApplication {
     private void displayMenu(User user) {
         while (true) {
             List<String> menuOptions = roleMenuService.getMenuOptions(user.getRole());
-
             System.out.println();
             System.out.println("----------- MENU -----------");
             for (int i = 0; i < menuOptions.size(); i++) {
@@ -163,7 +113,6 @@ public class ConsoleApplication {
             if (!input.hasNextLine()) return;
             System.out.print("Select an option: ");
             Integer selectedOption = input.readInteger();
-
             if (selectedOption == null) {
                 System.out.println("Invalid option. Please enter a number.");
                 continue;
@@ -179,7 +128,6 @@ public class ConsoleApplication {
                 System.out.println("Logged out successfully.");
                 return;
             }
-
             handleMenuOption(selected, user);
         }
     }
@@ -226,13 +174,9 @@ public class ConsoleApplication {
         }
     }
 
-    /**
-     * Exports one of the existing Admin reports without exposing report logic
-     * to the main navigation class.
-     */
+    /** Keeps the existing Admin report export behavior in one application-level method. */
     private void exportReports(User user) {
-        if (user == null || user.getRole() == null
-                || !"ADMIN".equals(user.getRole().name())) {
+        if (user == null || user.getRole() == null || !"ADMIN".equals(user.getRole().name())) {
             System.out.println("Access denied. Only Admin users can export reports.");
             AppLogger.warning("Unauthorized report export attempt.");
             return;
@@ -245,7 +189,6 @@ public class ConsoleApplication {
         System.out.println("3. Merchandise Sales Report");
         System.out.println("4. Cancel");
         System.out.println("------------------------------");
-
         if (!input.hasNextLine()) return;
         System.out.print("Select report: ");
         Integer selectedReport = input.readInteger();
@@ -258,7 +201,6 @@ public class ConsoleApplication {
             Path report;
             String message;
             String logMessage;
-
             switch (selectedReport) {
                 case 1:
                     report = reportExportService.exportMembershipRevenueReport();
@@ -282,7 +224,6 @@ public class ConsoleApplication {
                     System.out.println("Invalid report option.");
                     return;
             }
-
             System.out.println();
             System.out.println(message);
             System.out.println("File: " + report.toAbsolutePath());
