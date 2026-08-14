@@ -56,3 +56,34 @@ jobs:
           GYM_DB_USER: postgres
           GYM_DB_PASSWORD: postgres
         run: mvn -B clean test package
+
+      - name: Console smoke tests
+        env:
+          GYM_DB_URL: jdbc:postgresql://localhost:5432/gym_management
+          GYM_DB_USER: postgres
+          GYM_DB_PASSWORD: postgres
+        run: |
+          set -e
+
+          printf 'admin\nGymAdmin@2026\n3\n4\n1\n5\n7\n' \
+            | java -jar target/gym-management-system-1.0-SNAPSHOT.jar > /tmp/admin-smoke.txt
+
+          grep -q 'Login successful.' /tmp/admin-smoke.txt
+          grep -q 'Total Membership Revenue: $465.00' /tmp/admin-smoke.txt
+          grep -q 'Total Inventory Valuation: $1337.50' /tmp/admin-smoke.txt
+          grep -q 'Logged out successfully.' /tmp/admin-smoke.txt
+
+          printf 'trainer1\nTrainer@2026\n1\n2\n1\n5\n5\n' \
+            | java -jar target/gym-management-system-1.0-SNAPSHOT.jar > /tmp/trainer-smoke.txt
+
+          grep -q 'Login successful.' /tmp/trainer-smoke.txt
+          grep -q 'MY ASSIGNED CLASSES' /tmp/trainer-smoke.txt
+          grep -q 'Beginner Yoga' /tmp/trainer-smoke.txt
+          grep -q 'Logged out successfully.' /tmp/trainer-smoke.txt
+
+          printf 'member1\nMember@2026\n3\n6\n' \
+            | java -jar target/gym-management-system-1.0-SNAPSHOT.jar > /tmp/member-smoke.txt
+
+          grep -q 'Login successful.' /tmp/member-smoke.txt
+          grep -q 'WORKOUT CLASSES' /tmp/member-smoke.txt
+          grep -q 'Logged out successfully.' /tmp/member-smoke.txt
