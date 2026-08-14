@@ -1,5 +1,6 @@
 package com.keyingym.dao;
 
+import com.keyingym.config.AppLogger;
 import com.keyingym.config.DatabaseConnection;
 import com.keyingym.model.Membership;
 
@@ -30,7 +31,7 @@ public class MembershipDAO {
             return statement.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            AppLogger.error("Database transaction error while adding membership.", e);
             return false;
         }
     }
@@ -54,7 +55,7 @@ public class MembershipDAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            AppLogger.error("Database transaction error while finding membership: " + membershipId, e);
         }
 
         return null;
@@ -79,7 +80,7 @@ public class MembershipDAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            AppLogger.error("Database transaction error while finding membership type: " + membershipType, e);
         }
 
         return null;
@@ -103,7 +104,7 @@ public class MembershipDAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            AppLogger.error("Database transaction error while loading memberships.", e);
         }
 
         return memberships;
@@ -127,7 +128,7 @@ public class MembershipDAO {
             return statement.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            AppLogger.error("Database transaction error while updating membership: " + membership.getMembershipId(), e);
             return false;
         }
     }
@@ -143,7 +144,7 @@ public class MembershipDAO {
             return statement.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            AppLogger.error("Database transaction error while deleting membership: " + membershipId, e);
             return false;
         }
     }
