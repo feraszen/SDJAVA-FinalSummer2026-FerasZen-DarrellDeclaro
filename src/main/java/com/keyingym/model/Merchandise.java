@@ -72,4 +72,17 @@ public class Merchandise {
     public void setCurrentStock(int currentStock) {
         this.currentStock = currentStock;
     }
+
+    /**
+     * Calculates the current inventory value for this item.
+     *
+     * @return price multiplied by current stock, or zero when price is null
+     */
+    public BigDecimal getInventoryValue() {
+        if (price == null || currentStock <= 0) {
+            return BigDecimal.ZERO;
+        }
+
+        return price.multiply(BigDecimal.valueOf(currentStock));
+    }
 }
