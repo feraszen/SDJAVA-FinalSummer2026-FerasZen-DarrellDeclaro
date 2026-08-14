@@ -1,5 +1,6 @@
 package com.keyingym.dao;
 
+import com.keyingym.config.AppLogger;
 import com.keyingym.config.DatabaseConnection;
 import com.keyingym.model.User;
 import com.keyingym.model.UserRole;
@@ -18,14 +19,7 @@ import java.util.List;
  */
 public class UserDAO {
 
-    /**
-     * Creates a new user in the database.
-     *
-     * @param user the user to insert
-     * @return true if the user was successfully inserted
-     */
     public boolean addUser(User user) {
-
         String sql = """
                 INSERT INTO users
                     (username, password, email, phone, address, role)
@@ -45,19 +39,12 @@ public class UserDAO {
             return statement.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            AppLogger.error("Database transaction error while adding user.", e);
             return false;
         }
     }
 
-    /**
-     * Finds a user by user ID.
-     *
-     * @param userId the user ID
-     * @return the matching User, or null if no user exists
-     */
     public User findById(int userId) {
-
         String sql = """
                 SELECT user_id, username, password, email, phone, address, role
                 FROM users
@@ -70,27 +57,19 @@ public class UserDAO {
             statement.setInt(1, userId);
 
             try (ResultSet resultSet = statement.executeQuery()) {
-
                 if (resultSet.next()) {
                     return mapUser(resultSet);
                 }
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            AppLogger.error("Database transaction error while finding user: " + userId, e);
         }
 
         return null;
     }
 
-    /**
-     * Finds a user by username.
-     *
-     * @param username the username to search for
-     * @return the matching User, or null if no user exists
-     */
     public User findByUsername(String username) {
-
         String sql = """
                 SELECT user_id, username, password, email, phone, address, role
                 FROM users
@@ -103,26 +82,19 @@ public class UserDAO {
             statement.setString(1, username);
 
             try (ResultSet resultSet = statement.executeQuery()) {
-
                 if (resultSet.next()) {
                     return mapUser(resultSet);
                 }
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            AppLogger.error("Database transaction error while finding username: " + username, e);
         }
 
         return null;
     }
 
-    /**
-     * Returns all users ordered by user ID.
-     *
-     * @return list of users
-     */
     public List<User> getAllUsers() {
-
         String sql = """
                 SELECT user_id, username, password, email, phone, address, role
                 FROM users
@@ -140,20 +112,13 @@ public class UserDAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            AppLogger.error("Database transaction error while loading users.", e);
         }
 
         return users;
     }
 
-    /**
-     * Updates an existing user.
-     *
-     * @param user the user containing updated information
-     * @return true if a record was updated
-     */
     public boolean updateUser(User user) {
-
         String sql = """
                 UPDATE users
                 SET username = ?,
@@ -179,19 +144,12 @@ public class UserDAO {
             return statement.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            AppLogger.error("Database transaction error while updating user: " + user.getUserId(), e);
             return false;
         }
     }
 
-    /**
-     * Deletes a user by ID.
-     *
-     * @param userId the ID of the user to delete
-     * @return true if a record was deleted
-     */
     public boolean deleteUser(int userId) {
-
         String sql = "DELETE FROM users WHERE user_id = ?";
 
         try (Connection connection = DatabaseConnection.getConnection();
@@ -202,16 +160,12 @@ public class UserDAO {
             return statement.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            AppLogger.error("Database transaction error while deleting user: " + userId, e);
             return false;
         }
     }
 
-    /**
-     * Converts a database result row into a User object.
-     */
     private User mapUser(ResultSet resultSet) throws SQLException {
-
         User user = new User();
 
         user.setUserId(resultSet.getInt("user_id"));
