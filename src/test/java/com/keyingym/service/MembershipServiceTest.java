@@ -106,7 +106,16 @@ class MembershipServiceTest {
         FakeMembershipPurchaseDAO purchaseDAO = new FakeMembershipPurchaseDAO();
 
         int currentYear = java.time.LocalDate.now().getYear();
-        purchaseDAO.currentYearPurchases.add(
+        purchaseDAO.purchases.add(
+                new MembershipPurchase(
+                        99,
+                        24,
+                        9,
+                        new BigDecimal("999.00"),
+                        LocalDateTime.of(currentYear - 1, 12, 31, 23, 59)
+                )
+        );
+        purchaseDAO.purchases.add(
                 new MembershipPurchase(
                         100,
                         25,
@@ -115,7 +124,7 @@ class MembershipServiceTest {
                         LocalDateTime.of(currentYear, 2, 10, 10, 0)
                 )
         );
-        purchaseDAO.currentYearPurchases.add(
+        purchaseDAO.purchases.add(
                 new MembershipPurchase(
                         101,
                         26,
@@ -133,6 +142,9 @@ class MembershipServiceTest {
                 purchases.stream()
                         .map(MembershipPurchase::getPrice)
                         .reduce(BigDecimal.ZERO, BigDecimal::add));
+        assertTrue(purchases.stream().noneMatch(
+                purchase -> purchase.getPurchaseId() == 99
+        ));
         assertTrue(purchases.stream().allMatch(
                 purchase -> purchase.getPurchasedAt().getYear() == currentYear
         ));
@@ -158,7 +170,6 @@ class MembershipServiceTest {
     private static class FakeMembershipPurchaseDAO extends MembershipPurchaseDAO {
         private MembershipPurchase lastPurchase;
         private final List<MembershipPurchase> purchases = new ArrayList<>();
-        private final List<MembershipPurchase> currentYearPurchases = new ArrayList<>();
         private int addCallCount;
         private int getPurchasesCallCount;
 
@@ -180,7 +191,11 @@ class MembershipServiceTest {
 
         @Override
         public List<MembershipPurchase> getCurrentYearMembershipPurchases() {
-            return new ArrayList<>(currentYearPurchases);
+            int currentYear = java.time.LocalDate.now().getYear();
+            return purchases.stream()
+                    .filter(purchase -> purchase.getPurchasedAt() != null)
+                    .filter(purchase -> purchase.getPurchasedAt().getYear() == currentYear)
+                    .toList();
         }
     }
 }
