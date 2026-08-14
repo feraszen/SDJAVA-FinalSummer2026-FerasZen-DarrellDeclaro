@@ -57,6 +57,12 @@ src/
     config/
       AppLogger.java
       DatabaseConnection.java
+    console/
+      AdminConsole.java
+      ConsoleInput.java
+      MemberConsole.java
+      MerchandiseConsole.java
+      WorkoutClassConsole.java
     dao/
       MembershipDAO.java
       MembershipPurchaseDAO.java
@@ -89,14 +95,15 @@ database/
   seed.sql
   test-data.sql
 
-reports/
-  membership-revenue-report.txt
-  merchandise-inventory-report.txt
-  merchandise-sales-report.txt
+docs/
+  user_guide.md
+  developer_guide.md
+  individual-reports/
 
-app.log
 pom.xml
 ```
+
+Generated report files are runtime artifacts. The application creates the `reports/` directory when an export is requested; generated `.txt` files are not required to be committed to the repository.
 
 ## 3. Class Design
 
@@ -106,9 +113,18 @@ pom.xml
 - `UserRole` defines `ADMIN`, `TRAINER`, and `MEMBER` roles.
 - `Membership` represents a membership plan.
 - `MembershipPurchase` represents a user's completed membership purchase.
-- `Merchandise` represents an inventory item.
+- `Merchandise` represents an inventory item and provides `getInventoryValue()` for price × current stock.
 - `MerchandisePurchase` represents a merchandise purchase.
 - `WorkoutClass` represents a scheduled workout class.
+
+### Console Layer
+
+- `ConsoleApplication` handles startup, registration, authentication, navigation, and report-export dispatch.
+- `AdminConsole` handles Admin user and membership-revenue workflows.
+- `MemberConsole` handles Member membership and expense workflows.
+- `MerchandiseConsole` handles merchandise inventory and purchase workflows.
+- `WorkoutClassConsole` handles workout-class workflows.
+- `ConsoleInput` centralizes console parsing and validation helpers.
 
 ### DAO Layer
 
@@ -116,28 +132,32 @@ DAOs isolate PostgreSQL/JDBC operations from the rest of the application.
 
 - `UserDAO` handles user records and authentication lookup.
 - `MembershipDAO` handles membership plans.
-- `MembershipPurchaseDAO` handles membership purchase records.
+- `MembershipPurchaseDAO` handles membership purchase records, including the current-calendar-year query.
 - `MerchandiseDAO` handles inventory records.
 - `MerchandisePurchaseDAO` handles merchandise purchase records.
 - `WorkoutClassDAO` handles workout class CRUD operations.
 
+Database transaction errors are logged through `AppLogger.error(...)` rather than `printStackTrace()`.
+
 ### Service Layer
 
-Services contain application-level workflows and validation around the DAO operations.
+Services contain application-level workflows and validation around DAO operations.
 
 - `UserService` manages registration, authentication, user lookup, and deletion.
-- `MembershipService` manages membership plans, purchases, user purchases, and revenue data.
+- `MembershipService` manages membership plans, purchases, user purchases, and current-year revenue data.
 - `MerchandiseService` manages merchandise CRUD and purchase workflows.
-- `WorkoutClassService` manages class CRUD and trainer assignment filtering.
+- `WorkoutClassService` manages class CRUD and trainer assignment rules.
 - `AuthorizationService` defines role permissions.
 - `RoleMenuService` builds role-specific console menus.
-- `ReportExportService` reads database data and writes text reports.
+- `ReportExportService` reads database data and writes human-readable text reports.
 
 ### Role-Based Access Control
 
-`AuthorizationService` contains explicit permission checks for Admin, Trainer, and Member. `RoleMenuService` uses those checks to construct the visible menu for the authenticated role.
+`AuthorizationService` contains explicit permission checks for Admin, Trainer, and Member. `RoleMenuService` builds the visible role-specific menu for the authenticated user.
 
-This prevents unauthorized options from appearing in a user's role-specific menu.
+Sensitive workflow boundaries also perform role checks. Self-service registration always creates a `MEMBER` account and does not allow a registering user to select `ADMIN` or `TRAINER`. Merchandise purchase workflow boundaries accept only `MEMBER` and `TRAINER` users.
+
+Trainer workout-class update and delete operations are restricted to classes assigned to the logged-in trainer.
 
 ## 4. UML Class Diagram
 
@@ -146,6 +166,10 @@ The following Mermaid diagram summarizes the principal application relationships
 ```mermaid
 classDiagram
     class ConsoleApplication
+    class AdminConsole
+    class MemberConsole
+    class MerchandiseConsole
+    class WorkoutClassConsole
     class UserService
     class MembershipService
     class MerchandiseService
@@ -169,14 +193,22 @@ classDiagram
     class WorkoutClass
     class UserRole
 
+    ConsoleApplication --> AdminConsole
+    ConsoleApplication --> MemberConsole
+    ConsoleApplication --> MerchandiseConsole
+    ConsoleApplication --> WorkoutClassConsole
     ConsoleApplication --> UserService
     ConsoleApplication --> MembershipService
-    ConsoleApplication --> MerchandiseService
-    ConsoleApplication --> WorkoutClassService
     ConsoleApplication --> ReportExportService
     ConsoleApplication --> RoleMenuService
 
     RoleMenuService --> AuthorizationService
+
+    AdminConsole --> UserService
+    AdminConsole --> MembershipService
+    MemberConsole --> MembershipService
+    MerchandiseConsole --> MerchandiseService
+    WorkoutClassConsole --> WorkoutClassService
 
     UserService --> UserDAO
     MembershipService --> MembershipDAO
@@ -320,13 +352,6 @@ erDiagram
 - Maven.
 - Git.
 
-### Clone the Repository
-
-```bash
-git clone https://github.com/feraszen/SDJAVA-FinalSummer2026-FerasZen-DarrellDeclaro.git
-cd SDJAVA-FinalSummer2026-FerasZen-DarrellDeclaro
-```
-
 ### Create the Database
 
 Create a PostgreSQL database named:
@@ -337,53 +362,47 @@ gym_management_db
 
 Apply the schema:
 
-```bash
+```text
 psql -U postgres -d gym_management_db -f database/schema.sql
 ```
 
-If `psql` is not on the PATH on Windows, use the PostgreSQL installation path, for example:
+Load sample data when required:
 
-```bash
-"C:/Program Files/PostgreSQL/17/bin/psql.exe" -U postgres -d gym_management_db -f database/schema.sql
+```text
+psql -U postgres -d gym_management_db -f database/test-data.sql
 ```
 
-Load sample data with:
-
-```bash
-"C:/Program Files/PostgreSQL/17/bin/psql.exe" -U postgres -d gym_management_db -f database/test-data.sql
-```
-
-`test-data.sql` creates sample Admin, Trainer, and Member records and supporting membership, merchandise, purchase, and workout-class data.
+`seed.sql` provides base reference data. `test-data.sql` provides full demonstration/test data.
 
 ### Configure Environment Variables
 
-The application requires all three variables below:
+The application requires:
 
-```bash
-export GYM_DB_URL="jdbc:postgresql://localhost:5432/gym_management_db"
-export GYM_DB_USER="postgres"
-export GYM_DB_PASSWORD="YOUR_POSTGRES_PASSWORD"
+```text
+GYM_DB_URL
+GYM_DB_USER
+GYM_DB_PASSWORD
 ```
 
-Do not place a real password in source code or commit it to GitHub.
+Configure them locally before starting the application. Do not place real database credentials in source code or commit them to GitHub.
 
-### Build
+## 7. Maven Build and Run
+
+Build the project with:
 
 ```bash
 mvn clean package
 ```
 
-### Run
-
-The application can be run from the compiled classes with the PostgreSQL JDBC dependency available on the classpath. One Windows Git Bash example is:
+The Maven Shade Plugin creates an executable JAR containing the application dependencies. The verified primary run command is:
 
 ```bash
-java -cp "target/classes;target/dependency/*" com.keyingym.ConsoleApplication
+java -jar target/gym-management-system-1.0-SNAPSHOT.jar
 ```
 
-The project also contains a Maven-built JAR in the supplied build output.
+The older `target/dependency/*` classpath command is not the primary run instruction because the current Maven configuration does not copy dependencies into that directory.
 
-## 7. Dependencies
+## 8. Dependencies
 
 The `pom.xml` defines:
 
@@ -392,8 +411,9 @@ The `pom.xml` defines:
 - JUnit Jupiter `5.13.4` — automated tests.
 - Maven Compiler Plugin `3.14.1` — Java 17 compilation.
 - Maven Surefire Plugin `3.5.4` — running JUnit tests.
+- Maven Shade Plugin `3.6.0` — executable JAR creation.
 
-## 8. Logging Setup
+## 9. Logging Setup
 
 `AppLogger` uses `java.util.logging` and a persistent `FileHandler` writing to:
 
@@ -401,37 +421,42 @@ The `pom.xml` defines:
 app.log
 ```
 
-The logger is configured with append mode so previous log records remain available between application runs.
+The logger records application events including system startup, failed login attempts, report exports, Admin overrides, and database transaction errors handled by DAO classes.
 
-The project log contains examples of:
+Persistent logging is preferable to relying only on console output because log records can be reviewed after the application exits.
 
-- System startup events.
-- Failed login attempts.
-- Report export events.
-- Other application events recorded by the application.
-
-Database and application exceptions can be logged through the `AppLogger.error(...)` method.
-
-Logging is preferable to relying only on console output because persistent logs can be reviewed after the application exits.
-
-## 9. File Export Implementation
+## 10. File Export Implementation
 
 `ReportExportService` implements the Admin file-export challenge.
 
 The implementation:
 
-1. Reads current data through DAOs.
+1. Reads current database data through DAOs.
 2. Builds human-readable report text.
 3. Calls `Files.createDirectories(...)` for the `reports` directory.
 4. Writes the report using `Files.writeString(...)`.
 5. Logs the successful export through `AppLogger`.
 
-Using the `Files` API avoids manually managing a long-lived writer in this implementation. If a manually opened stream is not closed, resources may remain allocated and output may not be fully flushed before a crash or abnormal termination. The `Files.writeString(...)` convenience operation handles the underlying file resource management for the operation.
+The membership revenue report uses the current-calendar-year definition. `MembershipPurchaseDAO.getCurrentYearMembershipPurchases()` limits the query to the start of the current year through the start of the next year.
 
-## 10. Testing
+The merchandise inventory report includes per-item inventory value and total inventory valuation. `Merchandise.getInventoryValue()` calculates price multiplied by current stock.
+
+The `reports` directory and generated report files are runtime artifacts. They are created when the Admin uses the export workflow and are not required to be present in the repository beforehand.
+
+Using `Files.writeString(...)` avoids leaving a manually opened writer unclosed in this implementation. If manually opened streams are used elsewhere, they must be closed so resources are released and buffered output is flushed.
+
+## 11. Testing
 
 The repository contains JUnit tests for models, DAOs, services, authorization, menus, report export, and console application behavior.
 
-The supplied Maven Surefire results in the project build output show the test classes completing with zero failures and zero errors in the captured test run.
+The final audit added coverage for:
 
-In addition to automated tests, the application was manually exercised for Admin, Trainer, and Member workflows, including CRUD operations, purchases, inventory updates, role-specific menus, and report exports.
+- Member registration workflow.
+- Current-year membership revenue service data.
+- Current-year membership revenue report export.
+- Per-item merchandise inventory valuation.
+- Total merchandise inventory valuation.
+
+The previous verified baseline was 42 tests with zero failures/errors. The current branch contains additional tests and therefore should exceed that baseline when the final Maven build is run locally.
+
+A complete final manual pass should also verify Admin, Trainer, and Member workflows against the final database state.

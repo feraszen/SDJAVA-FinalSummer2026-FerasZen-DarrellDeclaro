@@ -18,7 +18,6 @@ class ConsoleApplicationTest {
 
     @Test
     void shouldLoginAndDisplayMemberMenu() {
-
         UserService fakeUserService = new UserService() {
             @Override
             public User authenticate(
@@ -27,7 +26,6 @@ class ConsoleApplicationTest {
             ) {
                 if ("testuser".equals(username)
                         && "password123".equals(plainPassword)) {
-
                     return new User(
                             1,
                             "testuser",
@@ -45,7 +43,7 @@ class ConsoleApplicationTest {
 
         String output = runApplication(
                 fakeUserService,
-                "testuser\npassword123\n"
+                "1\ntestuser\npassword123\n"
         );
 
         assertTrue(output.contains("Login successful."));
@@ -61,7 +59,6 @@ class ConsoleApplicationTest {
 
     @Test
     void shouldRejectInvalidLogin() {
-
         UserService fakeUserService = new UserService() {
             @Override
             public User authenticate(
@@ -74,7 +71,7 @@ class ConsoleApplicationTest {
 
         String output = runApplication(
                 fakeUserService,
-                "wronguser\nwrongpassword\n"
+                "1\nwronguser\nwrongpassword\n"
         );
 
         assertTrue(
@@ -84,24 +81,47 @@ class ConsoleApplicationTest {
         );
     }
 
-    /**
-     * Runs the console application with simulated input
-     * and captures the console output.
-     */
+    @Test
+    void shouldRegisterNewMember() {
+        UserService fakeUserService = new UserService() {
+            @Override
+            public boolean registerUser(
+                    String username,
+                    String plainPassword,
+                    String email,
+                    String phone,
+                    String address,
+                    UserRole role
+            ) {
+                return "newmember".equals(username)
+                        && "password123".equals(plainPassword)
+                        && "member@example.com".equals(email)
+                        && "709-555-0111".equals(phone)
+                        && "123 Main Street".equals(address)
+                        && role == UserRole.MEMBER;
+            }
+        };
+
+        String output = runApplication(
+                fakeUserService,
+                "2\nnewmember\npassword123\nmember@example.com\n709-555-0111\n123 Main Street\n3\n"
+        );
+
+        assertTrue(output.contains("Register as Member"));
+        assertTrue(output.contains("Registration successful."));
+    }
+
     private String runApplication(
             UserService userService,
             String input
     ) {
-
         Scanner scanner = new Scanner(
                 new ByteArrayInputStream(
                         input.getBytes(StandardCharsets.UTF_8)
                 )
         );
 
-        ByteArrayOutputStream output =
-                new ByteArrayOutputStream();
-
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
         PrintStream originalOut = System.out;
 
         try {
@@ -113,12 +133,11 @@ class ConsoleApplicationTest {
                     )
             );
 
-            ConsoleApplication application =
-                    new ConsoleApplication(
-                            userService,
-                            new RoleMenuService(),
-                            scanner
-                    );
+            ConsoleApplication application = new ConsoleApplication(
+                    userService,
+                    new RoleMenuService(),
+                    scanner
+            );
 
             application.run();
 

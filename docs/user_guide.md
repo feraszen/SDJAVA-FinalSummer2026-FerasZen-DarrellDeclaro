@@ -2,40 +2,31 @@
 
 ## 1. System Overview
 
-The Gym Management System is a console-based Java application for managing common gym operations through three role-specific accounts: Admin, Trainer, and Member.
-
-The system connects to a local PostgreSQL database and provides menus that are restricted according to the logged-in user's role.
+The Gym Management System is a console-based Java application for managing gym operations through Admin, Trainer, and Member roles.
 
 The main functions are:
 
-- User authentication and role-based menus.
+- Member registration and authentication.
+- Role-based menus.
 - Membership purchasing and expense tracking.
+- Current-calendar-year membership revenue tracking for Admin users.
 - Workout class scheduling and browsing.
-- Merchandise inventory and purchasing.
-- Membership revenue tracking for administrators.
-- Exporting reports to text files for administrators.
+- Merchandise inventory, valuation, and purchasing.
+- Text report export for Admin users.
 
 ## 2. User Roles
 
 ### Admin
 
-An Admin manages the gym's operational data.
-
-Admin functions include:
-
 - View all users and contact information.
 - Delete users.
-- View membership revenue.
-- Manage merchandise inventory.
+- View current-calendar-year membership revenue.
+- Manage merchandise inventory and view per-item and total inventory valuation.
 - Manage workout classes.
 - Export reports.
 - Log out.
 
 ### Trainer
-
-A Trainer can manage workout classes and purchase gym products or memberships.
-
-Trainer functions include:
 
 - View assigned workout classes.
 - Create, update, and delete workout classes.
@@ -45,10 +36,6 @@ Trainer functions include:
 
 ### Member
 
-A Member can view personal information related to memberships and purchases and can browse or purchase gym products.
-
-Member functions include:
-
 - View personal membership purchases.
 - View personal expenses.
 - Browse available workout classes.
@@ -57,90 +44,87 @@ Member functions include:
 - Purchase merchandise.
 - Log out.
 
-## 3. Common Workflows
+## 3. Registration and Login
 
-### 3.1 Logging In
+### 3.1 Registering a Member
 
 1. Start the application.
+2. Select **Register as Member**.
+3. Enter username, password, email, phone number, and address.
+4. The application creates the account with the `MEMBER` role.
+5. Select **Login** from the start menu and use the new credentials.
+
+Self-service registration does not allow a user to choose `ADMIN` or `TRAINER`.
+
+### 3.2 Logging In
+
+1. Select **Login**.
 2. Enter the username.
 3. Enter the password.
-4. After successful authentication, the system displays the menu allowed for the user's role.
+4. The application displays the menu allowed for the authenticated role.
 
-If authentication fails, the application rejects the login attempt and records the failed attempt in `app.log`.
+Failed login attempts are recorded in the persistent application log.
 
-### 3.2 Purchasing a Membership
+## 4. Memberships
 
-Available to Trainers and Members.
+Trainers and Members can purchase memberships through **Purchase Membership**.
 
-1. Log in.
-2. Select **Purchase Membership**.
-3. Review the available membership plans and prices.
-4. Enter the membership ID.
-5. The system records the purchase and displays a success message.
+Admin revenue is calculated from membership purchases made during the **current calendar year only**. Earlier purchases are excluded from the current-year total.
 
-Members can later view their membership purchases and expenses.
+## 5. Workout Classes
 
-### 3.3 Managing Workout Classes
+Admins and Trainers can use **Manage Workout Classes** to view, add, update, and delete classes.
 
-Available to Admins and Trainers.
+- Trainers are associated with their own user ID when creating or updating classes.
+- Trainers can update or delete only their own assigned classes.
+- Admins can manage all workout classes.
+- Members can use **Browse Workout Classes** without management permissions.
 
-1. Open **Manage Workout Classes**.
-2. Choose one of the following:
-   - View Classes
-   - Add Class
-   - Update Class
-   - Delete Class
-   - Return
-3. When creating or updating a class, provide the class name, description, trainer ID, and scheduled date/time.
-4. The system validates the database relationships. For example, a class cannot be assigned to a trainer ID that does not exist.
+## 6. Merchandise
 
-Members can use **Browse Workout Classes** to view available classes without managing them.
+Admins can use **Manage Merchandise Inventory** to view, add, update, and delete merchandise.
 
-### 3.4 Managing Merchandise
+Admin inventory displays:
 
-Available to Admins for inventory management.
+- Product price.
+- Current stock.
+- Per-item inventory value.
+- Total inventory valuation.
 
-Admin workflow:
+The calculation is:
 
-1. Open **Manage Merchandise Inventory**.
-2. View current inventory or choose Add, Update, or Delete.
-3. For new merchandise, enter the product name, type, price, and current stock.
-4. For an update, enter the merchandise ID and the new information.
-5. For deletion, enter the merchandise ID and confirm the deletion.
+```text
+Inventory Value = Price × Current Stock
+```
 
-Trainers and Members can browse merchandise and purchase available products.
+The total valuation is the sum of the current inventory values of all merchandise items.
 
-When merchandise is purchased, the quantity is recorded and the available stock is reduced.
+Trainers and Members can browse and purchase merchandise. Successful purchases reduce available stock.
 
-### 3.5 Exporting Reports
+## 7. Report Export
 
-Available only to Admins.
+Only Admin users can export reports.
 
-1. Open **Export Reports**.
-2. Choose a report type:
-   - Membership Revenue Report
-   - Merchandise Inventory Report
-   - Merchandise Sales Report
-3. The application creates the `reports` directory when necessary.
-4. The selected report is written as a human-readable `.txt` file.
+Available reports:
 
-The current implementation generates:
+1. Membership Revenue Report — current calendar year.
+2. Merchandise Inventory Report — includes per-item and total inventory valuation.
+3. Merchandise Sales Report.
 
-- `reports/membership-revenue-report.txt`
-- `reports/merchandise-inventory-report.txt`
-- `reports/merchandise-sales-report.txt`
+The application creates the `reports` directory automatically when necessary and writes human-readable `.txt` files.
 
-## 4. System Limitations
+Generated reports are runtime artifacts and do not need to exist in the repository before export is performed.
 
-- The user interface is console-based rather than graphical.
-- Payment processing is not connected to a real payment provider; purchases are recorded directly by the application.
-- The database must be available locally before the application can authenticate users or perform database operations.
-- Database credentials are supplied through environment variables and are not stored in the Java source code.
-- Report files are plain text files rather than PDF or spreadsheet reports.
-- The system is intended for the course project environment and does not provide production-grade deployment, payment, or multi-site features.
+## 8. System Limitations
 
-## 5. Data Safety and Good Practice
+- The interface is console-based.
+- Payment processing is simulated by recording purchases in PostgreSQL.
+- PostgreSQL must be available before database workflows can operate.
+- Database connection settings are supplied through the local environment.
+- Reports are plain-text files rather than PDF or spreadsheet files.
 
-Do not commit real database passwords to GitHub. Configure the required database environment variables locally before running the application.
+## 9. Data Safety
 
-The project test database scripts provide sample data for development and demonstration.
+Do not commit real database credentials or other secrets to GitHub. Use local environment configuration for database access.
+
+The SQL test-data script provides sample data for development and demonstration.

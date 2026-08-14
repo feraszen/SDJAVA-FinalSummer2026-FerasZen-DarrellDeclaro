@@ -26,9 +26,6 @@ public class ReportExportService {
     private final MerchandiseDAO merchandiseDAO;
     private final MerchandisePurchaseDAO merchandisePurchaseDAO;
 
-    /**
-     * Creates the service using the application's real DAOs.
-     */
     public ReportExportService() {
         this(
                 new MembershipPurchaseDAO(),
@@ -37,13 +34,6 @@ public class ReportExportService {
         );
     }
 
-    /**
-     * Constructor used for testing with supplied DAO implementations.
-     *
-     * @param membershipPurchaseDAO membership purchase DAO
-     * @param merchandiseDAO merchandise DAO
-     * @param merchandisePurchaseDAO merchandise purchase DAO
-     */
     ReportExportService(
             MembershipPurchaseDAO membershipPurchaseDAO,
             MerchandiseDAO merchandiseDAO,
@@ -55,24 +45,20 @@ public class ReportExportService {
     }
 
     /**
-     * Exports the membership revenue report to a text file.
-     *
-     * @return path of the generated report
-     * @throws IOException when the report cannot be written
+     * Exports the membership revenue report for the current calendar year.
      */
     public Path exportMembershipRevenueReport() throws IOException {
         List<MembershipPurchase> purchases =
-                membershipPurchaseDAO.getAllMembershipPurchases();
+                membershipPurchaseDAO.getCurrentYearMembershipPurchases();
 
         Path reportPath = createReportPath("membership-revenue-report.txt");
 
         BigDecimal totalRevenue = BigDecimal.ZERO;
-
         StringBuilder report = new StringBuilder();
 
         report.append("GYM MANAGEMENT SYSTEM")
                 .append(System.lineSeparator());
-        report.append("MEMBERSHIP REVENUE REPORT")
+        report.append("CURRENT YEAR MEMBERSHIP REVENUE REPORT")
                 .append(System.lineSeparator());
         report.append("========================================")
                 .append(System.lineSeparator());
@@ -83,7 +69,6 @@ public class ReportExportService {
                 .append(System.lineSeparator());
 
         for (MembershipPurchase purchase : purchases) {
-
             BigDecimal price = purchase.getPrice();
 
             if (price == null) {
@@ -105,14 +90,14 @@ public class ReportExportService {
         }
 
         report.append(System.lineSeparator());
-        report.append("Total Membership Revenue: ")
+        report.append("Current Year Membership Revenue: ")
                 .append(totalRevenue)
                 .append(System.lineSeparator());
 
         writeReport(reportPath, report.toString());
 
         AppLogger.info(
-                "Membership revenue report exported: "
+                "Current-year membership revenue report exported: "
                         + reportPath
         );
 
@@ -120,10 +105,7 @@ public class ReportExportService {
     }
 
     /**
-     * Exports the current merchandise inventory to a text file.
-     *
-     * @return path of the generated report
-     * @throws IOException when the report cannot be written
+     * Exports the current merchandise inventory, including item and total valuation.
      */
     public Path exportMerchandiseInventoryReport() throws IOException {
         List<Merchandise> merchandise =
@@ -131,6 +113,7 @@ public class ReportExportService {
 
         Path reportPath = createReportPath("merchandise-inventory-report.txt");
 
+        BigDecimal totalInventoryValue = BigDecimal.ZERO;
         StringBuilder report = new StringBuilder();
 
         report.append("GYM MANAGEMENT SYSTEM")
@@ -141,14 +124,17 @@ public class ReportExportService {
                 .append(System.lineSeparator());
 
         report.append(
-                "Merch ID | Product Name | Type | Price | Current Stock"
+                "Merch ID | Product Name | Type | Price | Current Stock | Inventory Value"
         ).append(System.lineSeparator());
 
         report.append(
-                "---------|--------------|------|-------|--------------"
+                "---------|--------------|------|-------|---------------|-----------------"
         ).append(System.lineSeparator());
 
         for (Merchandise item : merchandise) {
+            BigDecimal inventoryValue = item.getInventoryValue();
+            totalInventoryValue = totalInventoryValue.add(inventoryValue);
+
             report.append(item.getMerchId())
                     .append(" | ")
                     .append(item.getProductName())
@@ -158,12 +144,17 @@ public class ReportExportService {
                     .append(item.getPrice())
                     .append(" | ")
                     .append(item.getCurrentStock())
+                    .append(" | ")
+                    .append(inventoryValue)
                     .append(System.lineSeparator());
         }
 
         report.append(System.lineSeparator());
         report.append("Total Products: ")
                 .append(merchandise.size())
+                .append(System.lineSeparator());
+        report.append("Total Inventory Valuation: ")
+                .append(totalInventoryValue)
                 .append(System.lineSeparator());
 
         writeReport(reportPath, report.toString());
@@ -176,12 +167,6 @@ public class ReportExportService {
         return reportPath;
     }
 
-    /**
-     * Exports all merchandise sales to a text file.
-     *
-     * @return path of the generated report
-     * @throws IOException when the report cannot be written
-     */
     public Path exportMerchandiseSalesReport() throws IOException {
         List<MerchandisePurchase> purchases =
                 merchandisePurchaseDAO.getAllMerchandisePurchases();
@@ -189,7 +174,6 @@ public class ReportExportService {
         Path reportPath = createReportPath("merchandise-sales-report.txt");
 
         BigDecimal totalRevenue = BigDecimal.ZERO;
-
         StringBuilder report = new StringBuilder();
 
         report.append("GYM MANAGEMENT SYSTEM")
@@ -208,7 +192,6 @@ public class ReportExportService {
         ).append(System.lineSeparator());
 
         for (MerchandisePurchase purchase : purchases) {
-
             BigDecimal unitPrice = purchase.getUnitPrice();
 
             if (unitPrice == null) {
@@ -252,23 +235,14 @@ public class ReportExportService {
         return reportPath;
     }
 
-    /**
-     * Creates the reports directory and returns the requested report path.
-     */
     private Path createReportPath(String fileName) throws IOException {
         Path directory = Paths.get(REPORT_DIRECTORY);
-
         Files.createDirectories(directory);
-
         return directory.resolve(fileName);
     }
 
-    /**
-     * Writes report content to the specified file.
-     */
     private void writeReport(Path path, String content)
             throws IOException {
-
         Files.writeString(path, content);
     }
 }
