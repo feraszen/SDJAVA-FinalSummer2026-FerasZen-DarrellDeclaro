@@ -7,6 +7,7 @@ import com.keyingym.model.MembershipPurchase;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,133 +20,68 @@ class MembershipServiceTest {
 
     @Test
     void shouldPurchaseMembershipUsingCurrentMembershipPrice() {
+        FakeMembershipDAO membershipDAO = new FakeMembershipDAO();
+        FakeMembershipPurchaseDAO purchaseDAO = new FakeMembershipPurchaseDAO();
 
-        FakeMembershipDAO membershipDAO =
-                new FakeMembershipDAO();
-
-        FakeMembershipPurchaseDAO purchaseDAO =
-                new FakeMembershipPurchaseDAO();
-
-        Membership membership =
-                new Membership(
-                        10,
-                        "Monthly",
-                        new BigDecimal("45.00")
-                );
-
+        Membership membership = new Membership(
+                10,
+                "Monthly",
+                new BigDecimal("45.00")
+        );
         membershipDAO.memberships.add(membership);
 
-        MembershipService service =
-                new MembershipService(
-                        membershipDAO,
-                        purchaseDAO
-                );
+        MembershipService service = new MembershipService(
+                membershipDAO,
+                purchaseDAO
+        );
 
         assertTrue(service.purchaseMembership(25, 10));
-
         assertNotNull(purchaseDAO.lastPurchase);
-
-        assertEquals(
-                25,
-                purchaseDAO.lastPurchase.getUserId()
-        );
-
-        assertEquals(
-                10,
-                purchaseDAO.lastPurchase.getMembershipId()
-        );
-
+        assertEquals(25, purchaseDAO.lastPurchase.getUserId());
+        assertEquals(10, purchaseDAO.lastPurchase.getMembershipId());
         assertEquals(
                 new BigDecimal("45.00"),
                 purchaseDAO.lastPurchase.getPrice()
         );
-
-        assertNotNull(
-                purchaseDAO.lastPurchase.getPurchasedAt()
-        );
+        assertNotNull(purchaseDAO.lastPurchase.getPurchasedAt());
     }
 
     @Test
     void shouldRejectInvalidPurchaseData() {
-
-        FakeMembershipDAO membershipDAO =
-                new FakeMembershipDAO();
-
-        FakeMembershipPurchaseDAO purchaseDAO =
-                new FakeMembershipPurchaseDAO();
-
-        MembershipService service =
-                new MembershipService(
-                        membershipDAO,
-                        purchaseDAO
-                );
+        FakeMembershipDAO membershipDAO = new FakeMembershipDAO();
+        FakeMembershipPurchaseDAO purchaseDAO = new FakeMembershipPurchaseDAO();
+        MembershipService service = new MembershipService(membershipDAO, purchaseDAO);
 
         assertFalse(service.purchaseMembership(0, 10));
         assertFalse(service.purchaseMembership(25, 0));
-
-        assertFalse(
-                service.purchaseMembership(25, 10)
-        );
-
-        assertEquals(
-                0,
-                purchaseDAO.addCallCount
-        );
+        assertFalse(service.purchaseMembership(25, 10));
+        assertEquals(0, purchaseDAO.addCallCount);
     }
 
     @Test
     void shouldReturnAvailableMemberships() {
-
-        FakeMembershipDAO membershipDAO =
-                new FakeMembershipDAO();
-
-        FakeMembershipPurchaseDAO purchaseDAO =
-                new FakeMembershipPurchaseDAO();
+        FakeMembershipDAO membershipDAO = new FakeMembershipDAO();
+        FakeMembershipPurchaseDAO purchaseDAO = new FakeMembershipPurchaseDAO();
 
         membershipDAO.memberships.add(
-                new Membership(
-                        1,
-                        "Monthly",
-                        new BigDecimal("45.00")
-                )
+                new Membership(1, "Monthly", new BigDecimal("45.00"))
         );
-
         membershipDAO.memberships.add(
-                new Membership(
-                        2,
-                        "Annual",
-                        new BigDecimal("450.00")
-                )
+                new Membership(2, "Annual", new BigDecimal("450.00"))
         );
 
-        MembershipService service =
-                new MembershipService(
-                        membershipDAO,
-                        purchaseDAO
-                );
-
-        List<Membership> memberships =
-                service.getAvailableMemberships();
+        MembershipService service = new MembershipService(membershipDAO, purchaseDAO);
+        List<Membership> memberships = service.getAvailableMemberships();
 
         assertEquals(2, memberships.size());
-        assertEquals(
-                "Monthly",
-                memberships.get(0).getMembershipType()
-        );
-        assertEquals(
-                "Annual",
-                memberships.get(1).getMembershipType()
-        );
+        assertEquals("Monthly", memberships.get(0).getMembershipType());
+        assertEquals("Annual", memberships.get(1).getMembershipType());
     }
 
     @Test
     void shouldReturnUserPurchases() {
-
-        FakeMembershipDAO membershipDAO =
-                new FakeMembershipDAO();
-
-        FakeMembershipPurchaseDAO purchaseDAO =
-                new FakeMembershipPurchaseDAO();
+        FakeMembershipDAO membershipDAO = new FakeMembershipDAO();
+        FakeMembershipPurchaseDAO purchaseDAO = new FakeMembershipPurchaseDAO();
 
         purchaseDAO.purchases.add(
                 new MembershipPurchase(
@@ -153,69 +89,72 @@ class MembershipServiceTest {
                         25,
                         10,
                         new BigDecimal("45.00"),
-                        java.time.LocalDateTime.now()
+                        LocalDateTime.now()
                 )
         );
 
-        MembershipService service =
-                new MembershipService(
-                        membershipDAO,
-                        purchaseDAO
-                );
-
-        List<MembershipPurchase> purchases =
-                service.getUserPurchases(25);
+        MembershipService service = new MembershipService(membershipDAO, purchaseDAO);
+        List<MembershipPurchase> purchases = service.getUserPurchases(25);
 
         assertEquals(1, purchases.size());
-        assertEquals(
+        assertEquals(25, purchases.get(0).getUserId());
+        assertEquals(10, purchases.get(0).getMembershipId());
+    }
+
+    @Test
+    void shouldReturnPurchasesForRequestedCalendarYear() {
+        FakeMembershipDAO membershipDAO = new FakeMembershipDAO();
+        FakeMembershipPurchaseDAO purchaseDAO = new FakeMembershipPurchaseDAO();
+
+        int currentYear = LocalDateTime.now().getYear();
+
+        MembershipPurchase currentYearPurchase = new MembershipPurchase(
+                1,
                 25,
-                purchases.get(0).getUserId()
-        );
-        assertEquals(
                 10,
-                purchases.get(0).getMembershipId()
+                new BigDecimal("45.00"),
+                LocalDateTime.of(currentYear, 6, 1, 10, 0)
         );
+
+        MembershipPurchase previousYearPurchase = new MembershipPurchase(
+                2,
+                25,
+                10,
+                new BigDecimal("450.00"),
+                LocalDateTime.of(currentYear - 1, 6, 1, 10, 0)
+        );
+
+        purchaseDAO.purchases.add(currentYearPurchase);
+        purchaseDAO.purchases.add(previousYearPurchase);
+
+        MembershipService service = new MembershipService(membershipDAO, purchaseDAO);
+        List<MembershipPurchase> purchases =
+                service.getPurchasesForYear(currentYear);
+
+        assertEquals(1, purchases.size());
+        assertEquals(1, purchases.get(0).getPurchaseId());
+        assertEquals(currentYear, purchases.get(0).getPurchasedAt().getYear());
     }
 
     @Test
     void shouldRejectInvalidUserIdWhenGettingPurchases() {
+        FakeMembershipDAO membershipDAO = new FakeMembershipDAO();
+        FakeMembershipPurchaseDAO purchaseDAO = new FakeMembershipPurchaseDAO();
+        MembershipService service = new MembershipService(membershipDAO, purchaseDAO);
 
-        FakeMembershipDAO membershipDAO =
-                new FakeMembershipDAO();
-
-        FakeMembershipPurchaseDAO purchaseDAO =
-                new FakeMembershipPurchaseDAO();
-
-        MembershipService service =
-                new MembershipService(
-                        membershipDAO,
-                        purchaseDAO
-                );
-
-        List<MembershipPurchase> purchases =
-                service.getUserPurchases(0);
+        List<MembershipPurchase> purchases = service.getUserPurchases(0);
 
         assertTrue(purchases.isEmpty());
-        assertEquals(
-                0,
-                purchaseDAO.getPurchasesCallCount
-        );
+        assertEquals(0, purchaseDAO.getPurchasesCallCount);
     }
 
-    /**
-     * Simple in-memory DAO used to test the service without PostgreSQL.
-     */
-    private static class FakeMembershipDAO
-            extends MembershipDAO {
-
-        private final List<Membership> memberships =
-                new ArrayList<>();
+    private static class FakeMembershipDAO extends MembershipDAO {
+        private final List<Membership> memberships = new ArrayList<>();
 
         @Override
         public Membership findById(int membershipId) {
             return memberships.stream()
-                    .filter(item ->
-                            item.getMembershipId() == membershipId)
+                    .filter(item -> item.getMembershipId() == membershipId)
                     .findFirst()
                     .orElse(null);
         }
@@ -226,23 +165,14 @@ class MembershipServiceTest {
         }
     }
 
-    /**
-     * Simple in-memory DAO used to test purchase operations.
-     */
-    private static class FakeMembershipPurchaseDAO
-            extends MembershipPurchaseDAO {
-
+    private static class FakeMembershipPurchaseDAO extends MembershipPurchaseDAO {
         private MembershipPurchase lastPurchase;
-        private final List<MembershipPurchase> purchases =
-                new ArrayList<>();
-
+        private final List<MembershipPurchase> purchases = new ArrayList<>();
         private int addCallCount;
         private int getPurchasesCallCount;
 
         @Override
-        public boolean addMembershipPurchase(
-                MembershipPurchase purchase
-        ) {
+        public boolean addMembershipPurchase(MembershipPurchase purchase) {
             addCallCount++;
             lastPurchase = purchase;
             purchases.add(purchase);
@@ -250,14 +180,18 @@ class MembershipServiceTest {
         }
 
         @Override
-        public List<MembershipPurchase> getPurchasesByUserId(
-                int userId
-        ) {
+        public List<MembershipPurchase> getPurchasesByUserId(int userId) {
             getPurchasesCallCount++;
-
             return purchases.stream()
-                    .filter(item ->
-                            item.getUserId() == userId)
+                    .filter(item -> item.getUserId() == userId)
+                    .toList();
+        }
+
+        @Override
+        public List<MembershipPurchase> getMembershipPurchasesForYear(int year) {
+            return purchases.stream()
+                    .filter(item -> item.getPurchasedAt() != null)
+                    .filter(item -> item.getPurchasedAt().getYear() == year)
                     .toList();
         }
     }
