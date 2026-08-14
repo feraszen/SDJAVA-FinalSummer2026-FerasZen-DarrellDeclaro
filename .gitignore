@@ -15,6 +15,7 @@ Thumbs.db
 
 # Local environment and secrets
 .env
-.env.*app.log
+.env.*
 
+# Application logs
 app.log
