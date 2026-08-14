@@ -63,17 +63,24 @@ public class AdminConsole {
             System.out.println("User deleted successfully.");
             AppLogger.info("Admin override: deleted user : " + targetUser.getUsername());
         } else {
-            System.out.println("Unable to delete the user.");
+            System.out.println("Unable to delete the user. Purchase history may prevent deletion.");
         }
     }
 
+    /**
+     * Displays membership purchases and total revenue for the current calendar year.
+     */
     public void viewMembershipRevenue(User user) {
         if (!isAdmin(user)) return;
-        List<MembershipPurchase> purchases = membershipService.getAllPurchases();
+        List<MembershipPurchase> purchases = membershipService.getCurrentYearPurchases();
         BigDecimal totalRevenue = BigDecimal.ZERO;
         System.out.println();
-        System.out.println("------- MEMBERSHIP REVENUE -------");
-        if (purchases.isEmpty()) { System.out.println("No membership purchases found."); return; }
+        System.out.println("--- CURRENT YEAR MEMBERSHIP REVENUE ---");
+        if (purchases.isEmpty()) {
+            System.out.println("No membership purchases found for the current year.");
+            System.out.println("Current Year Membership Revenue: $0");
+            return;
+        }
         for (MembershipPurchase purchase : purchases) {
             BigDecimal price = purchase.getPrice();
             if (price == null) price = BigDecimal.ZERO;
@@ -84,8 +91,8 @@ public class AdminConsole {
                     + " | Price: $" + price
                     + " | Purchased At: " + purchase.getPurchasedAt());
         }
-        System.out.println("Total Membership Revenue: $" + totalRevenue);
-        System.out.println("----------------------------------");
+        System.out.println("Current Year Membership Revenue: $" + totalRevenue);
+        System.out.println("----------------------------------------");
     }
 
     public MerchandiseConsole merchandise() { return merchandiseConsole; }
