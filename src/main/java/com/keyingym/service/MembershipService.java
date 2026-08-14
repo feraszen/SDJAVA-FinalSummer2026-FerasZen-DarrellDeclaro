@@ -17,9 +17,6 @@ public class MembershipService {
     private final MembershipDAO membershipDAO;
     private final MembershipPurchaseDAO purchaseDAO;
 
-    /**
-     * Creates the service with the application's real DAOs.
-     */
     public MembershipService() {
         this(
                 new MembershipDAO(),
@@ -27,12 +24,6 @@ public class MembershipService {
         );
     }
 
-    /**
-     * Constructor used for testing with supplied DAO implementations.
-     *
-     * @param membershipDAO membership data access object
-     * @param purchaseDAO membership purchase data access object
-     */
     MembershipService(
             MembershipDAO membershipDAO,
             MembershipPurchaseDAO purchaseDAO
@@ -41,11 +32,6 @@ public class MembershipService {
         this.purchaseDAO = purchaseDAO;
     }
 
-    /**
-     * Returns all available membership plans.
-     *
-     * @return list of membership plans
-     */
     public List<Membership> getAvailableMemberships() {
         List<Membership> memberships =
                 membershipDAO.getAllMemberships();
@@ -57,12 +43,6 @@ public class MembershipService {
         return memberships;
     }
 
-    /**
-     * Finds a membership plan by ID.
-     *
-     * @param membershipId membership ID
-     * @return matching membership, or null when not found
-     */
     public Membership findMembershipById(int membershipId) {
         if (membershipId <= 0) {
             return null;
@@ -71,13 +51,6 @@ public class MembershipService {
         return membershipDAO.findById(membershipId);
     }
 
-    /**
-     * Purchases a membership for a user.
-     *
-     * @param userId user making the purchase
-     * @param membershipId membership being purchased
-     * @return true when the purchase is successfully recorded
-     */
     public boolean purchaseMembership(
             int userId,
             int membershipId
@@ -106,12 +79,6 @@ public class MembershipService {
         return purchaseDAO.addMembershipPurchase(purchase);
     }
 
-    /**
-     * Returns all membership purchases belonging to a user.
-     *
-     * @param userId user ID
-     * @return user's purchases
-     */
     public List<MembershipPurchase> getUserPurchases(int userId) {
         if (userId <= 0) {
             return Collections.emptyList();
@@ -127,14 +94,23 @@ public class MembershipService {
         return purchases;
     }
 
-    /**
-     * Returns all membership purchases in the system.
-     *
-     * @return all membership purchases
-     */
     public List<MembershipPurchase> getAllPurchases() {
         List<MembershipPurchase> purchases =
                 purchaseDAO.getAllMembershipPurchases();
+
+        if (purchases == null) {
+            return Collections.emptyList();
+        }
+
+        return purchases;
+    }
+
+    /**
+     * Returns membership purchases made during the current calendar year.
+     */
+    public List<MembershipPurchase> getCurrentYearPurchases() {
+        List<MembershipPurchase> purchases =
+                purchaseDAO.getCurrentYearMembershipPurchases();
 
         if (purchases == null) {
             return Collections.emptyList();
