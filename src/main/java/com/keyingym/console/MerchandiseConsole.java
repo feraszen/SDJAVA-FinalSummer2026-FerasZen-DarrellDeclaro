@@ -25,9 +25,6 @@ public class MerchandiseConsole {
         this.input = input;
     }
 
-    /**
-     * Displays the Admin merchandise management menu.
-     */
     public void manageInventory(User user) {
         if (user == null || user.getRole() != UserRole.ADMIN) {
             System.out.println("Access denied. Admin access required.");
@@ -79,7 +76,7 @@ public class MerchandiseConsole {
     }
 
     /**
-     * Displays merchandise. Non-admin users are offered the purchase workflow.
+     * Displays merchandise. Admin users also see per-item and total valuation.
      */
     public void browse(User user) {
         List<Merchandise> merchandise =
@@ -93,14 +90,35 @@ public class MerchandiseConsole {
             return;
         }
 
+        boolean admin = user != null && user.getRole() == UserRole.ADMIN;
+        BigDecimal totalInventoryValue = BigDecimal.ZERO;
+
         for (Merchandise item : merchandise) {
-            System.out.println(
-                    "ID: " + item.getMerchId()
-                            + " | Product: " + item.getProductName()
-                            + " | Type: " + item.getType()
-                            + " | Price: $" + item.getPrice()
-                            + " | Stock: " + item.getCurrentStock()
-            );
+            if (admin) {
+                BigDecimal inventoryValue = item.getInventoryValue();
+                totalInventoryValue = totalInventoryValue.add(inventoryValue);
+
+                System.out.println(
+                        "ID: " + item.getMerchId()
+                                + " | Product: " + item.getProductName()
+                                + " | Type: " + item.getType()
+                                + " | Price: $" + item.getPrice()
+                                + " | Stock: " + item.getCurrentStock()
+                                + " | Inventory Value: $" + inventoryValue
+                );
+            } else {
+                System.out.println(
+                        "ID: " + item.getMerchId()
+                                + " | Product: " + item.getProductName()
+                                + " | Type: " + item.getType()
+                                + " | Price: $" + item.getPrice()
+                                + " | Stock: " + item.getCurrentStock()
+                );
+            }
+        }
+
+        if (admin) {
+            System.out.println("Total Inventory Valuation: $" + totalInventoryValue);
         }
 
         System.out.println("-----------------------------------");
@@ -247,7 +265,7 @@ public class MerchandiseConsole {
                     "Admin override: deleted merchandise ID " + merchId
             );
         } else {
-            System.out.println("Unable to delete merchandise.");
+            System.out.println("Unable to delete merchandise. Purchase history may prevent deletion.");
         }
     }
 
@@ -255,7 +273,9 @@ public class MerchandiseConsole {
      * Purchases merchandise for a member or trainer.
      */
     public void purchase(User user) {
-        if (user == null) {
+        if (user == null || (user.getRole() != UserRole.MEMBER
+                && user.getRole() != UserRole.TRAINER)) {
+            System.out.println("Access denied. Member or Trainer access required.");
             return;
         }
 
