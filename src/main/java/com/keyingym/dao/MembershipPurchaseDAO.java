@@ -1,5 +1,6 @@
 package com.keyingym.dao;
 
+import com.keyingym.config.AppLogger;
 import com.keyingym.config.DatabaseConnection;
 import com.keyingym.model.MembershipPurchase;
 
@@ -7,6 +8,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,7 +35,10 @@ public class MembershipPurchaseDAO {
             return statement.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            AppLogger.error(
+                    "Database transaction error in MembershipPurchaseDAO.addMembershipPurchase.",
+                    e
+            );
             return false;
         }
     }
@@ -57,7 +62,10 @@ public class MembershipPurchaseDAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            AppLogger.error(
+                    "Database transaction error in MembershipPurchaseDAO.findById.",
+                    e
+            );
         }
 
         return null;
@@ -70,21 +78,29 @@ public class MembershipPurchaseDAO {
                 ORDER BY purchase_id ASC
                 """;
 
-        List<MembershipPurchase> purchases = new ArrayList<>();
+        return executePurchaseListQuery(sql, null, null);
+    }
 
-        try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql);
-             ResultSet resultSet = statement.executeQuery()) {
-
-            while (resultSet.next()) {
-                purchases.add(mapMembershipPurchase(resultSet));
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
+    /**
+     * Returns membership purchases made during the specified calendar year.
+     */
+    public List<MembershipPurchase> getMembershipPurchasesForYear(int year) {
+        if (year < 1 || year > 9999) {
+            return new ArrayList<>();
         }
 
-        return purchases;
+        String sql = """
+                SELECT purchase_id, user_id, membership_id, price, purchased_at
+                FROM membership_purchases
+                WHERE purchased_at >= ?
+                  AND purchased_at < ?
+                ORDER BY purchased_at ASC
+                """;
+
+        LocalDateTime start = LocalDateTime.of(year, 1, 1, 0, 0);
+        LocalDateTime end = LocalDateTime.of(year + 1, 1, 1, 0, 0);
+
+        return executePurchaseListQuery(sql, start, end);
     }
 
     public List<MembershipPurchase> getPurchasesByUserId(int userId) {
@@ -109,7 +125,10 @@ public class MembershipPurchaseDAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            AppLogger.error(
+                    "Database transaction error in MembershipPurchaseDAO.getPurchasesByUserId.",
+                    e
+            );
         }
 
         return purchases;
@@ -122,13 +141,46 @@ public class MembershipPurchaseDAO {
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setInt(1, purchaseId);
-
             return statement.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            AppLogger.error(
+                    "Database transaction error in MembershipPurchaseDAO.deleteMembershipPurchase.",
+                    e
+            );
             return false;
         }
+    }
+
+    private List<MembershipPurchase> executePurchaseListQuery(
+            String sql,
+            LocalDateTime start,
+            LocalDateTime end
+    ) {
+        List<MembershipPurchase> purchases = new ArrayList<>();
+
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            if (start != null && end != null) {
+                statement.setObject(1, start);
+                statement.setObject(2, end);
+            }
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    purchases.add(mapMembershipPurchase(resultSet));
+                }
+            }
+
+        } catch (SQLException e) {
+            AppLogger.error(
+                    "Database transaction error in MembershipPurchaseDAO purchase query.",
+                    e
+            );
+        }
+
+        return purchases;
     }
 
     private MembershipPurchase mapMembershipPurchase(ResultSet resultSet)
@@ -143,7 +195,7 @@ public class MembershipPurchaseDAO {
         purchase.setPurchasedAt(
                 resultSet.getObject(
                         "purchased_at",
-                        java.time.LocalDateTime.class
+                        LocalDateTime.class
                 )
         );
 
