@@ -12,7 +12,8 @@ The main functions are:
 - Membership purchasing and expense tracking.
 - Workout class scheduling and browsing.
 - Merchandise inventory and purchasing.
-- Membership revenue tracking for administrators.
+- Current-calendar-year membership revenue tracking for administrators.
+- Merchandise inventory valuation for administrators.
 - Exporting reports to text files for administrators.
 
 ## 2. User Roles
@@ -25,23 +26,26 @@ Admin functions include:
 
 - View all users and contact information.
 - Delete users.
-- View membership revenue.
-- Manage merchandise inventory.
-- Manage workout classes.
+- View membership revenue for the current calendar year.
+- Manage merchandise inventory and view total inventory valuation.
+- Manage all workout classes.
 - Export reports.
 - Log out.
 
 ### Trainer
 
-A Trainer can manage workout classes and purchase gym products or memberships.
+A Trainer can manage workout classes assigned to that Trainer and purchase gym products or memberships.
 
 Trainer functions include:
 
-- View assigned workout classes.
-- Create, update, and delete workout classes.
+- View assigned workout classes only.
+- Create workout classes assigned to the logged-in Trainer.
+- Update or delete classes assigned to the logged-in Trainer.
 - Purchase a gym membership.
 - Browse and purchase merchandise.
 - Log out.
+
+A Trainer cannot update or delete a class assigned to another Trainer.
 
 ### Member
 
@@ -84,15 +88,20 @@ Members can later view their membership purchases and expenses.
 
 Available to Admins and Trainers.
 
+**Admin:**
+
 1. Open **Manage Workout Classes**.
-2. Choose one of the following:
-   - View Classes
-   - Add Class
-   - Update Class
-   - Delete Class
-   - Return
-3. When creating or updating a class, provide the class name, description, trainer ID, and scheduled date/time.
-4. The system validates the database relationships. For example, a class cannot be assigned to a trainer ID that does not exist.
+2. Choose View, Add, Update, Delete, or Return.
+3. Admins can manage classes for any valid trainer.
+
+**Trainer:**
+
+1. Open **View Assigned Classes** to see only classes assigned to the logged-in Trainer.
+2. Open **Manage Workout Classes** to view and manage the Trainer's own assigned classes.
+3. When creating a class, the logged-in Trainer is automatically used as the trainer assignment.
+4. A Trainer cannot update or delete another Trainer's class.
+
+When creating or updating a class, the system validates the class name, trainer relationship, and scheduled date/time.
 
 Members can use **Browse Workout Classes** to view available classes without managing them.
 
@@ -104,15 +113,23 @@ Admin workflow:
 
 1. Open **Manage Merchandise Inventory**.
 2. View current inventory or choose Add, Update, or Delete.
-3. For new merchandise, enter the product name, type, price, and current stock.
-4. For an update, enter the merchandise ID and the new information.
-5. For deletion, enter the merchandise ID and confirm the deletion.
+3. Each item shows price, current stock, and inventory valuation calculated as `price × current stock`.
+4. The bottom of the inventory view shows **Total Inventory Valuation**.
+5. For new merchandise, enter the product name, type, price, and current stock.
+6. For an update, enter the merchandise ID and the new information.
+7. For deletion, enter the merchandise ID and confirm the deletion.
 
 Trainers and Members can browse merchandise and purchase available products.
 
 When merchandise is purchased, the quantity is recorded and the available stock is reduced.
 
-### 3.5 Exporting Reports
+### 3.5 Viewing Membership Revenue
+
+Available only to Admins.
+
+The **View Membership Revenue** option reports purchases made during the current calendar year. The report displays the qualifying purchases and the total membership revenue for that year.
+
+### 3.6 Exporting Reports
 
 Available only to Admins.
 
@@ -144,3 +161,5 @@ The current implementation generates:
 Do not commit real database passwords to GitHub. Configure the required database environment variables locally before running the application.
 
 The project test database scripts provide sample data for development and demonstration.
+
+Database errors are recorded through the application's persistent `AppLogger` instead of relying on console stack traces.
