@@ -13,6 +13,26 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: gym_management_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d gym_management_test"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      GYM_DB_URL: jdbc:postgresql://localhost:5432/gym_management_test
+      GYM_DB_USER: postgres
+      GYM_DB_PASSWORD: postgres
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -23,6 +43,13 @@ jobs:
           distribution: temurin
           java-version: '17'
           cache: maven
+
+      - name: Initialize PostgreSQL test database
+        env:
+          PGPASSWORD: postgres
+        run: |
+          psql -h localhost -U postgres -d gym_management_test -f database/schema.sql
+          psql -h localhost -U postgres -d gym_management_test -f database/seed.sql
 
       - name: Run Maven tests
         run: mvn -B clean test
