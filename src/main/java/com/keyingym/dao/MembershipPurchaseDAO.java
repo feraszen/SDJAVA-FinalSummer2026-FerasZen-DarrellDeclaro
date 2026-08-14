@@ -1,5 +1,6 @@
 package com.keyingym.dao;
 
+import com.keyingym.config.AppLogger;
 import com.keyingym.config.DatabaseConnection;
 import com.keyingym.model.MembershipPurchase;
 
@@ -7,6 +8,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,7 +36,7 @@ public class MembershipPurchaseDAO {
             return statement.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            AppLogger.error("Database transaction error while adding membership purchase.", e);
             return false;
         }
     }
@@ -57,7 +60,7 @@ public class MembershipPurchaseDAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            AppLogger.error("Database transaction error while finding membership purchase: " + purchaseId, e);
         }
 
         return null;
@@ -81,7 +84,42 @@ public class MembershipPurchaseDAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            AppLogger.error("Database transaction error while loading membership purchases.", e);
+        }
+
+        return purchases;
+    }
+
+    /**
+     * Returns membership purchases made during the current calendar year.
+     */
+    public List<MembershipPurchase> getCurrentYearMembershipPurchases() {
+        LocalDateTime startOfYear = LocalDate.of(LocalDate.now().getYear(), 1, 1).atStartOfDay();
+        LocalDateTime startOfNextYear = startOfYear.plusYears(1);
+
+        String sql = """
+                SELECT purchase_id, user_id, membership_id, price, purchased_at
+                FROM membership_purchases
+                WHERE purchased_at >= ? AND purchased_at < ?
+                ORDER BY purchased_at ASC
+                """;
+
+        List<MembershipPurchase> purchases = new ArrayList<>();
+
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setObject(1, startOfYear);
+            statement.setObject(2, startOfNextYear);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    purchases.add(mapMembershipPurchase(resultSet));
+                }
+            }
+
+        } catch (SQLException e) {
+            AppLogger.error("Database transaction error while loading current-year membership purchases.", e);
         }
 
         return purchases;
@@ -109,7 +147,7 @@ public class MembershipPurchaseDAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            AppLogger.error("Database transaction error while loading purchases for user: " + userId, e);
         }
 
         return purchases;
@@ -126,7 +164,7 @@ public class MembershipPurchaseDAO {
             return statement.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            AppLogger.error("Database transaction error while deleting membership purchase: " + purchaseId, e);
             return false;
         }
     }
@@ -143,7 +181,7 @@ public class MembershipPurchaseDAO {
         purchase.setPurchasedAt(
                 resultSet.getObject(
                         "purchased_at",
-                        java.time.LocalDateTime.class
+                        LocalDateTime.class
                 )
         );
 
