@@ -25,9 +25,7 @@ public class MerchandiseConsole {
         this.input = input;
     }
 
-    /**
-     * Displays the Admin merchandise management menu.
-     */
+    /** Displays the Admin merchandise management menu. */
     public void manageInventory(User user) {
         if (user == null || user.getRole() != UserRole.ADMIN) {
             System.out.println("Access denied. Admin access required.");
@@ -79,7 +77,7 @@ public class MerchandiseConsole {
     }
 
     /**
-     * Displays merchandise. Non-admin users are offered the purchase workflow.
+     * Displays merchandise and, for non-admin users, offers the purchase workflow.
      */
     public void browse(User user) {
         List<Merchandise> merchandise =
@@ -93,16 +91,29 @@ public class MerchandiseConsole {
             return;
         }
 
+        BigDecimal totalValuation = BigDecimal.ZERO;
+
         for (Merchandise item : merchandise) {
+            BigDecimal price = item.getPrice() == null
+                    ? BigDecimal.ZERO
+                    : item.getPrice();
+
+            BigDecimal itemValuation =
+                    price.multiply(BigDecimal.valueOf(item.getCurrentStock()));
+
+            totalValuation = totalValuation.add(itemValuation);
+
             System.out.println(
                     "ID: " + item.getMerchId()
                             + " | Product: " + item.getProductName()
                             + " | Type: " + item.getType()
-                            + " | Price: $" + item.getPrice()
+                            + " | Price: $" + price
                             + " | Stock: " + item.getCurrentStock()
+                            + " | Valuation: $" + itemValuation
             );
         }
 
+        System.out.println("Total Inventory Valuation: $" + totalValuation);
         System.out.println("-----------------------------------");
 
         if (user != null && user.getRole() != UserRole.ADMIN) {
@@ -139,7 +150,8 @@ public class MerchandiseConsole {
         Integer stock = input.readInteger();
 
         if (productName == null || type == null || price == null
-                || stock == null || price.signum() < 0 || stock < 0) {
+                || stock == null || productName.isBlank() || type.isBlank()
+                || price.signum() < 0 || stock < 0) {
             System.out.println("Invalid merchandise information.");
             return;
         }
@@ -251,9 +263,7 @@ public class MerchandiseConsole {
         }
     }
 
-    /**
-     * Purchases merchandise for a member or trainer.
-     */
+    /** Purchases merchandise for a member or trainer. */
     public void purchase(User user) {
         if (user == null) {
             return;
@@ -283,8 +293,7 @@ public class MerchandiseConsole {
             return;
         }
 
-        Merchandise item =
-                merchandiseService.findMerchandiseById(merchId);
+        Merchandise item = merchandiseService.findMerchandiseById(merchId);
 
         if (item == null) {
             System.out.println("Merchandise not found.");
