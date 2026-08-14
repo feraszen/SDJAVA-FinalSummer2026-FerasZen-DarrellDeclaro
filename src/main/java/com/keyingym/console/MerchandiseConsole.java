@@ -25,7 +25,6 @@ public class MerchandiseConsole {
         this.input = input;
     }
 
-    /** Displays the Admin merchandise management menu. */
     public void manageInventory(User user) {
         if (user == null || user.getRole() != UserRole.ADMIN) {
             System.out.println("Access denied. Admin access required.");
@@ -76,9 +75,6 @@ public class MerchandiseConsole {
         }
     }
 
-    /**
-     * Displays merchandise and, for non-admin users, offers the purchase workflow.
-     */
     public void browse(User user) {
         List<Merchandise> merchandise =
                 merchandiseService.getAvailableMerchandise();
@@ -91,7 +87,8 @@ public class MerchandiseConsole {
             return;
         }
 
-        BigDecimal totalValuation = BigDecimal.ZERO;
+        BigDecimal totalValuation =
+                merchandiseService.calculateInventoryValuation(merchandise);
 
         for (Merchandise item : merchandise) {
             BigDecimal price = item.getPrice() == null
@@ -100,8 +97,6 @@ public class MerchandiseConsole {
 
             BigDecimal itemValuation =
                     price.multiply(BigDecimal.valueOf(item.getCurrentStock()));
-
-            totalValuation = totalValuation.add(itemValuation);
 
             System.out.println(
                     "ID: " + item.getMerchId()
@@ -184,8 +179,7 @@ public class MerchandiseConsole {
             return;
         }
 
-        Merchandise existing =
-                merchandiseService.findMerchandiseById(merchId);
+        Merchandise existing = merchandiseService.findMerchandiseById(merchId);
 
         if (existing == null) {
             System.out.println("Merchandise not found.");
@@ -237,8 +231,7 @@ public class MerchandiseConsole {
             return;
         }
 
-        Merchandise merchandise =
-                merchandiseService.findMerchandiseById(merchId);
+        Merchandise merchandise = merchandiseService.findMerchandiseById(merchId);
 
         if (merchandise == null) {
             System.out.println("Merchandise not found.");
@@ -255,15 +248,12 @@ public class MerchandiseConsole {
 
         if (merchandiseService.deleteMerchandise(merchId)) {
             System.out.println("Merchandise deleted successfully.");
-            AppLogger.info(
-                    "Admin override: deleted merchandise ID " + merchId
-            );
+            AppLogger.info("Admin override: deleted merchandise ID " + merchId);
         } else {
             System.out.println("Unable to delete merchandise.");
         }
     }
 
-    /** Purchases merchandise for a member or trainer. */
     public void purchase(User user) {
         if (user == null) {
             return;
@@ -277,10 +267,7 @@ public class MerchandiseConsole {
             return;
         }
 
-        System.out.print(
-                "Enter merchandise ID to purchase or 0 to cancel: "
-        );
-
+        System.out.print("Enter merchandise ID to purchase or 0 to cancel: ");
         Integer merchId = input.readInteger();
 
         if (merchId == null) {
