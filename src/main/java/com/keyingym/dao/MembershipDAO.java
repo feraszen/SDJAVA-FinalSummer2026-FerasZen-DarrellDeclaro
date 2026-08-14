@@ -1,5 +1,6 @@
 package com.keyingym.dao;
 
+import com.keyingym.config.AppLogger;
 import com.keyingym.config.DatabaseConnection;
 import com.keyingym.model.Membership;
 
@@ -26,11 +27,10 @@ public class MembershipDAO {
 
             statement.setString(1, membership.getMembershipType());
             statement.setBigDecimal(2, membership.getPrice());
-
             return statement.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            AppLogger.error("Database transaction error in MembershipDAO.addMembership.", e);
             return false;
         }
     }
@@ -54,7 +54,7 @@ public class MembershipDAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            AppLogger.error("Database transaction error in MembershipDAO.findById.", e);
         }
 
         return null;
@@ -79,7 +79,10 @@ public class MembershipDAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            AppLogger.error(
+                    "Database transaction error in MembershipDAO.findByMembershipType.",
+                    e
+            );
         }
 
         return null;
@@ -103,7 +106,7 @@ public class MembershipDAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            AppLogger.error("Database transaction error in MembershipDAO.getAllMemberships.", e);
         }
 
         return memberships;
@@ -123,11 +126,10 @@ public class MembershipDAO {
             statement.setString(1, membership.getMembershipType());
             statement.setBigDecimal(2, membership.getPrice());
             statement.setInt(3, membership.getMembershipId());
-
             return statement.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            AppLogger.error("Database transaction error in MembershipDAO.updateMembership.", e);
             return false;
         }
     }
@@ -139,11 +141,10 @@ public class MembershipDAO {
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setInt(1, membershipId);
-
             return statement.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            AppLogger.error("Database transaction error in MembershipDAO.deleteMembership.", e);
             return false;
         }
     }
