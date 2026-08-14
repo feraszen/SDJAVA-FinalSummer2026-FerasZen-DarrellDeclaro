@@ -19,78 +19,87 @@ class MerchandiseServiceTest {
 
     @Test
     void shouldPurchaseMerchandiseAndReduceStock() {
+        FakeMerchandiseDAO merchandiseDAO = new FakeMerchandiseDAO();
+        FakeMerchandisePurchaseDAO purchaseDAO = new FakeMerchandisePurchaseDAO();
 
-        FakeMerchandiseDAO merchandiseDAO =
-                new FakeMerchandiseDAO();
-
-        FakeMerchandisePurchaseDAO purchaseDAO =
-                new FakeMerchandisePurchaseDAO();
-
-        Merchandise merchandise =
-                new Merchandise(
-                        10,
-                        "Gym T-Shirt",
-                        "Clothing",
-                        new BigDecimal("20.00"),
-                        10
-                );
-
+        Merchandise merchandise = new Merchandise(
+                10,
+                "Gym T-Shirt",
+                "Clothing",
+                new BigDecimal("20.00"),
+                10
+        );
         merchandiseDAO.merchandiseItems.add(merchandise);
 
-        MerchandiseService service =
-                new MerchandiseService(
-                        merchandiseDAO,
-                        purchaseDAO
-                );
-
-        assertTrue(
-                service.purchaseMerchandise(
-                        25,
-                        10,
-                        2
-                )
+        MerchandiseService service = new MerchandiseService(
+                merchandiseDAO,
+                purchaseDAO
         );
 
+        assertTrue(service.purchaseMerchandise(25, 10, 2));
         assertNotNull(purchaseDAO.lastPurchase);
-
-        assertEquals(
-                25,
-                purchaseDAO.lastPurchase.getUserId()
-        );
-
-        assertEquals(
-                10,
-                purchaseDAO.lastPurchase.getMerchId()
-        );
-
-        assertEquals(
-                2,
-                purchaseDAO.lastPurchase.getQuantity()
-        );
-
+        assertEquals(25, purchaseDAO.lastPurchase.getUserId());
+        assertEquals(10, purchaseDAO.lastPurchase.getMerchId());
+        assertEquals(2, purchaseDAO.lastPurchase.getQuantity());
         assertEquals(
                 new BigDecimal("20.00"),
                 purchaseDAO.lastPurchase.getUnitPrice()
         );
+        assertNotNull(purchaseDAO.lastPurchase.getPurchasedAt());
+        assertEquals(8, merchandise.getCurrentStock());
+    }
 
-        assertNotNull(
-                purchaseDAO.lastPurchase.getPurchasedAt()
+    @Test
+    void shouldCalculateTotalInventoryValuation() {
+        MerchandiseService service = new MerchandiseService(
+                new FakeMerchandiseDAO(),
+                new FakeMerchandisePurchaseDAO()
+        );
+
+        List<Merchandise> merchandise = List.of(
+                new Merchandise(
+                        1,
+                        "Protein Bar",
+                        "Food & Drink",
+                        new BigDecimal("3.50"),
+                        40
+                ),
+                new Merchandise(
+                        2,
+                        "Water Bottle",
+                        "Workout Gear",
+                        new BigDecimal("15.00"),
+                        20
+                )
         );
 
         assertEquals(
-                8,
-                merchandise.getCurrentStock()
+                new BigDecimal("440.00"),
+                service.calculateInventoryValuation(merchandise)
+        );
+    }
+
+    @Test
+    void shouldReturnZeroInventoryValuationForEmptyInput() {
+        MerchandiseService service = new MerchandiseService(
+                new FakeMerchandiseDAO(),
+                new FakeMerchandisePurchaseDAO()
+        );
+
+        assertEquals(
+                BigDecimal.ZERO,
+                service.calculateInventoryValuation(List.of())
+        );
+        assertEquals(
+                BigDecimal.ZERO,
+                service.calculateInventoryValuation(null)
         );
     }
 
     @Test
     void shouldRejectQuantityGreaterThanStock() {
-
-        FakeMerchandiseDAO merchandiseDAO =
-                new FakeMerchandiseDAO();
-
-        FakeMerchandisePurchaseDAO purchaseDAO =
-                new FakeMerchandisePurchaseDAO();
+        FakeMerchandiseDAO merchandiseDAO = new FakeMerchandiseDAO();
+        FakeMerchandisePurchaseDAO purchaseDAO = new FakeMerchandisePurchaseDAO();
 
         merchandiseDAO.merchandiseItems.add(
                 new Merchandise(
@@ -102,145 +111,53 @@ class MerchandiseServiceTest {
                 )
         );
 
-        MerchandiseService service =
-                new MerchandiseService(
-                        merchandiseDAO,
-                        purchaseDAO
-                );
-
-        assertFalse(
-                service.purchaseMerchandise(
-                        25,
-                        10,
-                        4
-                )
+        MerchandiseService service = new MerchandiseService(
+                merchandiseDAO,
+                purchaseDAO
         );
 
-        assertEquals(
-                0,
-                purchaseDAO.addCallCount
-        );
-
-        assertEquals(
-                3,
-                merchandiseDAO.merchandiseItems
-                        .get(0)
-                        .getCurrentStock()
-        );
+        assertFalse(service.purchaseMerchandise(25, 10, 4));
+        assertEquals(0, purchaseDAO.addCallCount);
+        assertEquals(3, merchandiseDAO.merchandiseItems.get(0).getCurrentStock());
     }
 
     @Test
     void shouldRejectInvalidPurchaseData() {
+        FakeMerchandiseDAO merchandiseDAO = new FakeMerchandiseDAO();
+        FakeMerchandisePurchaseDAO purchaseDAO = new FakeMerchandisePurchaseDAO();
+        MerchandiseService service = new MerchandiseService(merchandiseDAO, purchaseDAO);
 
-        FakeMerchandiseDAO merchandiseDAO =
-                new FakeMerchandiseDAO();
-
-        FakeMerchandisePurchaseDAO purchaseDAO =
-                new FakeMerchandisePurchaseDAO();
-
-        MerchandiseService service =
-                new MerchandiseService(
-                        merchandiseDAO,
-                        purchaseDAO
-                );
-
-        assertFalse(
-                service.purchaseMerchandise(
-                        0,
-                        10,
-                        1
-                )
-        );
-
-        assertFalse(
-                service.purchaseMerchandise(
-                        25,
-                        0,
-                        1
-                )
-        );
-
-        assertFalse(
-                service.purchaseMerchandise(
-                        25,
-                        10,
-                        0
-                )
-        );
-
-        assertFalse(
-                service.purchaseMerchandise(
-                        25,
-                        10,
-                        -1
-                )
-        );
-
-        assertEquals(
-                0,
-                purchaseDAO.addCallCount
-        );
+        assertFalse(service.purchaseMerchandise(0, 10, 1));
+        assertFalse(service.purchaseMerchandise(25, 0, 1));
+        assertFalse(service.purchaseMerchandise(25, 10, 0));
+        assertFalse(service.purchaseMerchandise(25, 10, -1));
+        assertEquals(0, purchaseDAO.addCallCount);
     }
 
     @Test
     void shouldReturnAvailableMerchandise() {
-
-        FakeMerchandiseDAO merchandiseDAO =
-                new FakeMerchandiseDAO();
-
-        FakeMerchandisePurchaseDAO purchaseDAO =
-                new FakeMerchandisePurchaseDAO();
+        FakeMerchandiseDAO merchandiseDAO = new FakeMerchandiseDAO();
+        FakeMerchandisePurchaseDAO purchaseDAO = new FakeMerchandisePurchaseDAO();
 
         merchandiseDAO.merchandiseItems.add(
-                new Merchandise(
-                        1,
-                        "Gym T-Shirt",
-                        "Clothing",
-                        new BigDecimal("20.00"),
-                        10
-                )
+                new Merchandise(1, "Gym T-Shirt", "Clothing", new BigDecimal("20.00"), 10)
         );
-
         merchandiseDAO.merchandiseItems.add(
-                new Merchandise(
-                        2,
-                        "Water Bottle",
-                        "Accessories",
-                        new BigDecimal("10.00"),
-                        15
-                )
+                new Merchandise(2, "Water Bottle", "Accessories", new BigDecimal("10.00"), 15)
         );
 
-        MerchandiseService service =
-                new MerchandiseService(
-                        merchandiseDAO,
-                        purchaseDAO
-                );
-
-        List<Merchandise> merchandise =
-                service.getAvailableMerchandise();
+        MerchandiseService service = new MerchandiseService(merchandiseDAO, purchaseDAO);
+        List<Merchandise> merchandise = service.getAvailableMerchandise();
 
         assertEquals(2, merchandise.size());
-
-        assertEquals(
-                "Gym T-Shirt",
-                merchandise.get(0).getProductName()
-        );
-
-        assertEquals(
-                "Water Bottle",
-                merchandise.get(1).getProductName()
-        );
+        assertEquals("Gym T-Shirt", merchandise.get(0).getProductName());
+        assertEquals("Water Bottle", merchandise.get(1).getProductName());
     }
 
     @Test
     void shouldReturnUserPurchases() {
-
-        FakeMerchandiseDAO merchandiseDAO =
-                new FakeMerchandiseDAO();
-
-        FakeMerchandisePurchaseDAO purchaseDAO =
-                new FakeMerchandisePurchaseDAO();
+        FakeMerchandiseDAO merchandiseDAO = new FakeMerchandiseDAO();
+        FakeMerchandisePurchaseDAO purchaseDAO = new FakeMerchandisePurchaseDAO();
 
         purchaseDAO.purchases.add(
                 new MerchandisePurchase(
@@ -253,70 +170,34 @@ class MerchandiseServiceTest {
                 )
         );
 
-        MerchandiseService service =
-                new MerchandiseService(
-                        merchandiseDAO,
-                        purchaseDAO
-                );
-
-        List<MerchandisePurchase> purchases =
-                service.getUserPurchases(25);
+        MerchandiseService service = new MerchandiseService(merchandiseDAO, purchaseDAO);
+        List<MerchandisePurchase> purchases = service.getUserPurchases(25);
 
         assertEquals(1, purchases.size());
-
-        assertEquals(
-                25,
-                purchases.get(0).getUserId()
-        );
-
-        assertEquals(
-                10,
-                purchases.get(0).getMerchId()
-        );
-
-        assertEquals(
-                2,
-                purchases.get(0).getQuantity()
-        );
+        assertEquals(25, purchases.get(0).getUserId());
+        assertEquals(10, purchases.get(0).getMerchId());
+        assertEquals(2, purchases.get(0).getQuantity());
     }
 
     @Test
     void shouldRejectInvalidUserIdWhenGettingPurchases() {
+        FakeMerchandiseDAO merchandiseDAO = new FakeMerchandiseDAO();
+        FakeMerchandisePurchaseDAO purchaseDAO = new FakeMerchandisePurchaseDAO();
+        MerchandiseService service = new MerchandiseService(merchandiseDAO, purchaseDAO);
 
-        FakeMerchandiseDAO merchandiseDAO =
-                new FakeMerchandiseDAO();
-
-        FakeMerchandisePurchaseDAO purchaseDAO =
-                new FakeMerchandisePurchaseDAO();
-
-        MerchandiseService service =
-                new MerchandiseService(
-                        merchandiseDAO,
-                        purchaseDAO
-                );
-
-        List<MerchandisePurchase> purchases =
-                service.getUserPurchases(0);
+        List<MerchandisePurchase> purchases = service.getUserPurchases(0);
 
         assertTrue(purchases.isEmpty());
-
-        assertEquals(
-                0,
-                purchaseDAO.getPurchasesCallCount
-        );
+        assertEquals(0, purchaseDAO.getPurchasesCallCount);
     }
 
-    private static class FakeMerchandiseDAO
-            extends MerchandiseDAO {
-
-        private final List<Merchandise> merchandiseItems =
-                new ArrayList<>();
+    private static class FakeMerchandiseDAO extends MerchandiseDAO {
+        private final List<Merchandise> merchandiseItems = new ArrayList<>();
 
         @Override
         public Merchandise findById(int merchId) {
             return merchandiseItems.stream()
-                    .filter(item ->
-                            item.getMerchId() == merchId)
+                    .filter(item -> item.getMerchId() == merchId)
                     .findFirst()
                     .orElse(null);
         }
@@ -327,48 +208,29 @@ class MerchandiseServiceTest {
         }
 
         @Override
-        public boolean updateMerchandise(
-                Merchandise merchandise
-        ) {
-            Merchandise existing =
-                    findById(merchandise.getMerchId());
+        public boolean updateMerchandise(Merchandise merchandise) {
+            Merchandise existing = findById(merchandise.getMerchId());
 
             if (existing == null) {
                 return false;
             }
 
-            existing.setProductName(
-                    merchandise.getProductName()
-            );
-            existing.setType(
-                    merchandise.getType()
-            );
-            existing.setPrice(
-                    merchandise.getPrice()
-            );
-            existing.setCurrentStock(
-                    merchandise.getCurrentStock()
-            );
-
+            existing.setProductName(merchandise.getProductName());
+            existing.setType(merchandise.getType());
+            existing.setPrice(merchandise.getPrice());
+            existing.setCurrentStock(merchandise.getCurrentStock());
             return true;
         }
     }
 
-    private static class FakeMerchandisePurchaseDAO
-            extends MerchandisePurchaseDAO {
-
+    private static class FakeMerchandisePurchaseDAO extends MerchandisePurchaseDAO {
         private MerchandisePurchase lastPurchase;
-
-        private final List<MerchandisePurchase> purchases =
-                new ArrayList<>();
-
+        private final List<MerchandisePurchase> purchases = new ArrayList<>();
         private int addCallCount;
         private int getPurchasesCallCount;
 
         @Override
-        public boolean addMerchandisePurchase(
-                MerchandisePurchase purchase
-        ) {
+        public boolean addMerchandisePurchase(MerchandisePurchase purchase) {
             addCallCount++;
             lastPurchase = purchase;
             purchases.add(purchase);
@@ -376,14 +238,10 @@ class MerchandiseServiceTest {
         }
 
         @Override
-        public List<MerchandisePurchase> getPurchasesByUserId(
-                int userId
-        ) {
+        public List<MerchandisePurchase> getPurchasesByUserId(int userId) {
             getPurchasesCallCount++;
-
             return purchases.stream()
-                    .filter(item ->
-                            item.getUserId() == userId)
+                    .filter(item -> item.getUserId() == userId)
                     .toList();
         }
     }
