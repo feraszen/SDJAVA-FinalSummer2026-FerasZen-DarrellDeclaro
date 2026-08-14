@@ -206,6 +206,20 @@ GYM_DB_PASSWORD=your_local_password
 
 **Do not commit real credentials, passwords, or other secrets to GitHub.**
 
+## Demo / Test Accounts
+
+The repository includes demonstration/test data with the following predefined application accounts. These credentials are intended for **academic demonstration and local testing only**.
+
+| Role | Username | Password |
+|---|---|---|
+| **ADMIN** | `admin` | `GymAdmin@2026` |
+| **TRAINER** | `trainer1` | `Trainer@2026` |
+| **MEMBER** | `member1` | `Member@2026` |
+
+The accounts above are created by `database/test-data.sql` using BCrypt password hashes. citeturn168file0
+
+> **Important:** These are demo credentials for this academic project. Do not reuse them for real or production systems.
+
 ## Build & Run
 
 ### Prerequisites
