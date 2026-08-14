@@ -27,6 +27,7 @@ import com.keyingym.service.WorkoutClassService;
  * and application-level report export handling.
  */
 public class ConsoleApplication {
+
     private final UserService userService;
     private final RoleMenuService roleMenuService;
     private final ReportExportService reportExportService;
@@ -38,40 +39,90 @@ public class ConsoleApplication {
     private final WorkoutClassConsole workoutClassConsole;
 
     public ConsoleApplication() {
-        this(new UserService(), new RoleMenuService(), new ReportExportService(),
-                new MembershipService(), new MerchandiseService(), new WorkoutClassService(), new Scanner(System.in));
+        this(
+                new UserService(),
+                new RoleMenuService(),
+                new ReportExportService(),
+                new MembershipService(),
+                new MerchandiseService(),
+                new WorkoutClassService(),
+                new Scanner(System.in)
+        );
     }
 
-    ConsoleApplication(UserService userService, RoleMenuService roleMenuService,
-                       ReportExportService reportExportService, MembershipService membershipService,
-                       MerchandiseService merchandiseService, WorkoutClassService workoutClassService,
-                       Scanner scanner) {
+    ConsoleApplication(
+            UserService userService,
+            RoleMenuService roleMenuService,
+            ReportExportService reportExportService,
+            MembershipService membershipService,
+            MerchandiseService merchandiseService,
+            WorkoutClassService workoutClassService,
+            Scanner scanner
+    ) {
         this.userService = userService;
         this.roleMenuService = roleMenuService;
         this.reportExportService = reportExportService;
         this.membershipService = membershipService;
         this.input = new ConsoleInput(scanner);
-        this.merchandiseConsole = new MerchandiseConsole(merchandiseService, input);
-        this.workoutClassConsole = new WorkoutClassConsole(workoutClassService, input);
-        this.adminConsole = new AdminConsole(userService, membershipService,
-                merchandiseConsole, workoutClassConsole, input);
-        this.memberConsole = new MemberConsole(membershipService, merchandiseService,
-                merchandiseConsole, input);
+
+        this.merchandiseConsole =
+                new MerchandiseConsole(
+                        merchandiseService,
+                        input
+                );
+
+        this.workoutClassConsole =
+                new WorkoutClassConsole(
+                        workoutClassService,
+                        input
+                );
+
+        this.adminConsole =
+                new AdminConsole(
+                        userService,
+                        membershipService,
+                        merchandiseConsole,
+                        workoutClassConsole,
+                        input
+                );
+
+        this.memberConsole =
+                new MemberConsole(
+                        membershipService,
+                        merchandiseService,
+                        merchandiseConsole,
+                        input
+                );
     }
 
-    /** Backward-compatible constructor used by existing tests. */
-    ConsoleApplication(UserService userService, RoleMenuService roleMenuService, Scanner scanner) {
-        this(userService, roleMenuService, new ReportExportService(), new MembershipService(),
-                new MerchandiseService(), new WorkoutClassService(), scanner);
+    /**
+     * Backward-compatible constructor used by existing tests.
+     */
+    ConsoleApplication(
+            UserService userService,
+            RoleMenuService roleMenuService,
+            Scanner scanner
+    ) {
+        this(
+                userService,
+                roleMenuService,
+                new ReportExportService(),
+                new MembershipService(),
+                new MerchandiseService(),
+                new WorkoutClassService(),
+                scanner
+        );
     }
 
     public void run() {
         AppLogger.info("System startup.");
+
         System.out.println("=================================");
         System.out.println("     GYM MANAGEMENT SYSTEM");
         System.out.println("=================================");
 
         User authenticatedUser = login();
+
         if (authenticatedUser == null) {
             System.out.println("Login failed. Exiting application.");
             return;
@@ -79,121 +130,241 @@ public class ConsoleApplication {
 
         System.out.println();
         System.out.println("Login successful.");
-        System.out.println("Welcome, " + authenticatedUser.getUsername() + "!");
-        System.out.println("Role: " + authenticatedUser.getRole());
+        System.out.println(
+                "Welcome, "
+                        + authenticatedUser.getUsername()
+                        + "!"
+        );
+        System.out.println(
+                "Role: "
+                        + authenticatedUser.getRole()
+        );
+
         displayMenu(authenticatedUser);
     }
 
     private User login() {
         System.out.print("Username: ");
-        if (!input.hasNextLine()) return null;
+
+        if (!input.hasNextLine()) {
+            return null;
+        }
+
         String username = input.readLine();
 
         System.out.print("Password: ");
-        if (!input.hasNextLine()) return null;
+
+        if (!input.hasNextLine()) {
+            return null;
+        }
+
         String password = input.readRawLine();
 
-        User authenticatedUser = userService.authenticate(username, password);
+        User authenticatedUser =
+                userService.authenticate(
+                        username,
+                        password
+                );
+
         if (authenticatedUser == null) {
-            AppLogger.warning("Failed login attempt for username: " + username);
+            AppLogger.warning(
+                    "Failed login attempt for username: "
+                            + username
+            );
         }
+
         return authenticatedUser;
     }
 
     private void displayMenu(User user) {
         while (true) {
-            List<String> menuOptions = roleMenuService.getMenuOptions(user.getRole());
+            List<String> menuOptions =
+                    roleMenuService.getMenuOptions(
+                            user.getRole()
+                    );
+
             System.out.println();
             System.out.println("----------- MENU -----------");
+
             for (int i = 0; i < menuOptions.size(); i++) {
-                System.out.println((i + 1) + ". " + menuOptions.get(i));
-            }
-            System.out.println("----------------------------");
-
-            if (!input.hasNextLine()) return;
-            System.out.print("Select an option: ");
-            Integer selectedOption = input.readInteger();
-            if (selectedOption == null) {
-                System.out.println("Invalid option. Please enter a number.");
-                continue;
-            }
-            if (selectedOption < 1 || selectedOption > menuOptions.size()) {
-                System.out.println("Invalid option. Please try again.");
-                continue;
+                System.out.println(
+                        (i + 1)
+                                + ". "
+                                + menuOptions.get(i)
+                );
             }
 
-            String selected = menuOptions.get(selectedOption - 1);
-            if ("Logout".equals(selected)) {
-                AppLogger.info("User logged out: " + user.getUsername());
-                System.out.println("Logged out successfully.");
+            System.out.println(
+                    "----------------------------"
+            );
+
+            if (!input.hasNextLine()) {
                 return;
             }
-            handleMenuOption(selected, user);
+
+            System.out.print("Select an option: ");
+
+            Integer selectedOption =
+                    input.readInteger();
+
+            if (selectedOption == null) {
+                System.out.println(
+                        "Invalid option. Please enter a number."
+                );
+                continue;
+            }
+
+            if (selectedOption < 1
+                    || selectedOption > menuOptions.size()) {
+                System.out.println(
+                        "Invalid option. Please try again."
+                );
+                continue;
+            }
+
+            String selected =
+                    menuOptions.get(
+                            selectedOption - 1
+                    );
+
+            if ("Logout".equals(selected)) {
+                AppLogger.info(
+                        "User logged out: "
+                                + user.getUsername()
+                );
+
+                System.out.println(
+                        "Logged out successfully."
+                );
+
+                return;
+            }
+
+            handleMenuOption(
+                    selected,
+                    user
+            );
         }
     }
 
-    private void handleMenuOption(String option, User user) {
+    private void handleMenuOption(
+            String option,
+            User user
+    ) {
         switch (option) {
+
             case "View All Users":
                 adminConsole.viewAllUsers(user);
                 break;
+
             case "Delete User":
                 adminConsole.deleteUser(user);
                 break;
+
             case "View Membership Revenue":
                 adminConsole.viewMembershipRevenue(user);
                 break;
+
             case "Manage Merchandise Inventory":
                 merchandiseConsole.manageInventory(user);
                 break;
+
             case "Manage Workout Classes":
                 workoutClassConsole.manage(user);
                 break;
+
             case "Export Reports":
                 exportReports(user);
                 break;
+
             case "View Assigned Classes":
-            case "Browse Workout Classes":
-                workoutClassConsole.browse();
+                workoutClassConsole.browse(user);
                 break;
+
+            case "Browse Workout Classes":
+                workoutClassConsole.browse(user);
+                break;
+
             case "Purchase Membership":
                 memberConsole.purchaseMembership(user);
                 break;
+
             case "View My Membership":
                 memberConsole.viewMyMembership(user);
                 break;
+
             case "View My Expenses":
                 memberConsole.viewMyExpenses(user);
                 break;
+
             case "Browse Merchandise":
                 merchandiseConsole.browse(user);
                 break;
+
             default:
-                System.out.println("This menu option is not available.");
+                System.out.println(
+                        "This menu option is not available."
+                );
                 break;
         }
     }
 
-    /** Keeps the existing Admin report export behavior in one application-level method. */
+    /**
+     * Keeps the existing Admin report export behavior
+     * in one application-level method.
+     */
     private void exportReports(User user) {
-        if (user == null || user.getRole() == null || !"ADMIN".equals(user.getRole().name())) {
-            System.out.println("Access denied. Only Admin users can export reports.");
-            AppLogger.warning("Unauthorized report export attempt.");
+
+        if (user == null
+                || user.getRole() == null
+                || !"ADMIN".equals(
+                        user.getRole().name()
+                )) {
+
+            System.out.println(
+                    "Access denied. Only Admin users can export reports."
+            );
+
+            AppLogger.warning(
+                    "Unauthorized report export attempt."
+            );
+
             return;
         }
 
         System.out.println();
-        System.out.println("------- EXPORT REPORTS -------");
-        System.out.println("1. Membership Revenue Report");
-        System.out.println("2. Merchandise Inventory Report");
-        System.out.println("3. Merchandise Sales Report");
-        System.out.println("4. Cancel");
-        System.out.println("------------------------------");
-        if (!input.hasNextLine()) return;
+        System.out.println(
+                "------- EXPORT REPORTS -------"
+        );
+        System.out.println(
+                "1. Membership Revenue Report"
+        );
+        System.out.println(
+                "2. Merchandise Inventory Report"
+        );
+        System.out.println(
+                "3. Merchandise Sales Report"
+        );
+        System.out.println(
+                "4. Cancel"
+        );
+        System.out.println(
+                "------------------------------"
+        );
+
+        if (!input.hasNextLine()) {
+            return;
+        }
+
         System.out.print("Select report: ");
-        Integer selectedReport = input.readInteger();
+
+        Integer selectedReport =
+                input.readInteger();
+
         if (selectedReport == null) {
-            System.out.println("Invalid report option.");
+            System.out.println(
+                    "Invalid report option."
+            );
             return;
         }
 
@@ -201,36 +372,81 @@ public class ConsoleApplication {
             Path report;
             String message;
             String logMessage;
+
             switch (selectedReport) {
+
                 case 1:
-                    report = reportExportService.exportMembershipRevenueReport();
-                    message = "Membership Revenue Report exported successfully.";
-                    logMessage = "Admin exported membership revenue report: ";
+                    report =
+                            reportExportService
+                                    .exportMembershipRevenueReport();
+
+                    message =
+                            "Membership Revenue Report exported successfully.";
+
+                    logMessage =
+                            "Admin exported membership revenue report: ";
                     break;
+
                 case 2:
-                    report = reportExportService.exportMerchandiseInventoryReport();
-                    message = "Merchandise Inventory Report exported successfully.";
-                    logMessage = "Admin exported merchandise inventory report: ";
+                    report =
+                            reportExportService
+                                    .exportMerchandiseInventoryReport();
+
+                    message =
+                            "Merchandise Inventory Report exported successfully.";
+
+                    logMessage =
+                            "Admin exported merchandise inventory report: ";
                     break;
+
                 case 3:
-                    report = reportExportService.exportMerchandiseSalesReport();
-                    message = "Merchandise Sales Report exported successfully.";
-                    logMessage = "Admin exported merchandise sales report: ";
+                    report =
+                            reportExportService
+                                    .exportMerchandiseSalesReport();
+
+                    message =
+                            "Merchandise Sales Report exported successfully.";
+
+                    logMessage =
+                            "Admin exported merchandise sales report: ";
                     break;
+
                 case 4:
-                    System.out.println("Report export cancelled.");
+                    System.out.println(
+                            "Report export cancelled."
+                    );
                     return;
+
                 default:
-                    System.out.println("Invalid report option.");
+                    System.out.println(
+                            "Invalid report option."
+                    );
                     return;
             }
+
             System.out.println();
             System.out.println(message);
-            System.out.println("File: " + report.toAbsolutePath());
-            AppLogger.info(logMessage + user.getUsername());
+            System.out.println(
+                    "File: "
+                            + report.toAbsolutePath()
+            );
+
+            AppLogger.info(
+                    logMessage
+                            + user.getUsername()
+            );
+
         } catch (IOException e) {
-            System.out.println("Unable to export the report.");
-            AppLogger.error("Report export failed for Admin: " + user.getUsername(), e);
+
+            System.out.println(
+                    "Unable to export the report."
+            );
+
+            AppLogger.error(
+                    "Report export failed for Admin: "
+                            + user.getUsername(),
+                    e
+            );
         }
     }
 

@@ -93,14 +93,11 @@ public class WorkoutClassDAO {
                 ORDER BY scheduled_at ASC
                 """;
 
-        List<WorkoutClass> workoutClasses =
-                new ArrayList<>();
+        List<WorkoutClass> workoutClasses = new ArrayList<>();
 
         try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement statement =
-                     connection.prepareStatement(sql);
-             ResultSet resultSet =
-                     statement.executeQuery()) {
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
 
             while (resultSet.next()) {
                 workoutClasses.add(
@@ -111,6 +108,46 @@ public class WorkoutClassDAO {
         } catch (SQLException e) {
             AppLogger.error(
                     "Database transaction error in WorkoutClassDAO.getAllWorkoutClasses.",
+                    e
+            );
+        }
+
+        return workoutClasses;
+    }
+
+    /**
+     * Returns only the workout classes assigned to the specified trainer.
+     *
+     * @param trainerId trainer user ID
+     * @return workout classes assigned to the trainer
+     */
+    public List<WorkoutClass> getWorkoutClassesByTrainerId(int trainerId) {
+        String sql = """
+                SELECT class_id, class_name, description, trainer_id, scheduled_at
+                FROM workout_classes
+                WHERE trainer_id = ?
+                ORDER BY scheduled_at ASC
+                """;
+
+        List<WorkoutClass> workoutClasses = new ArrayList<>();
+
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setInt(1, trainerId);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+
+                while (resultSet.next()) {
+                    workoutClasses.add(
+                            mapWorkoutClass(resultSet)
+                    );
+                }
+            }
+
+        } catch (SQLException e) {
+            AppLogger.error(
+                    "Database transaction error in WorkoutClassDAO.getWorkoutClassesByTrainerId.",
                     e
             );
         }
