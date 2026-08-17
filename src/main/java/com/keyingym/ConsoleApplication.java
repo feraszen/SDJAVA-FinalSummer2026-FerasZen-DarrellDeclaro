@@ -291,7 +291,11 @@ public class ConsoleApplication {
                 exportReports(user);
                 break;
             case "View Assigned Classes":
+<<<<<<< HEAD
                 workoutClassConsole.browse(user);
+=======
+                workoutClassConsole.browseAssigned(user);
+>>>>>>> fix/final-review-priority
                 break;
             case "Browse Workout Classes":
                 workoutClassConsole.browse(user);
@@ -331,10 +335,14 @@ public class ConsoleApplication {
         System.out.println("4. Cancel");
         System.out.println("------------------------------");
 
+<<<<<<< HEAD
         if (!input.hasNextLine()) {
             return;
         }
 
+=======
+        if (!input.hasNextLine()) return;
+>>>>>>> fix/final-review-priority
         System.out.print("Select report: ");
         Integer selectedReport = input.readInteger();
 

@@ -18,10 +18,7 @@ public class MembershipService {
     private final MembershipPurchaseDAO purchaseDAO;
 
     public MembershipService() {
-        this(
-                new MembershipDAO(),
-                new MembershipPurchaseDAO()
-        );
+        this(new MembershipDAO(), new MembershipPurchaseDAO());
     }
 
     MembershipService(
@@ -33,8 +30,7 @@ public class MembershipService {
     }
 
     public List<Membership> getAvailableMemberships() {
-        List<Membership> memberships =
-                membershipDAO.getAllMemberships();
+        List<Membership> memberships = membershipDAO.getAllMemberships();
 
         if (memberships == null) {
             return Collections.emptyList();
@@ -51,30 +47,31 @@ public class MembershipService {
         return membershipDAO.findById(membershipId);
     }
 
+<<<<<<< HEAD
     public boolean purchaseMembership(
             int userId,
             int membershipId
     ) {
+=======
+    public boolean purchaseMembership(int userId, int membershipId) {
+>>>>>>> fix/final-review-priority
         if (userId <= 0 || membershipId <= 0) {
             return false;
         }
 
-        Membership membership =
-                membershipDAO.findById(membershipId);
+        Membership membership = membershipDAO.findById(membershipId);
 
-        if (membership == null
-                || membership.getPrice() == null) {
+        if (membership == null || membership.getPrice() == null) {
             return false;
         }
 
-        MembershipPurchase purchase =
-                new MembershipPurchase(
-                        0,
-                        userId,
-                        membershipId,
-                        membership.getPrice(),
-                        LocalDateTime.now().withNano(0)
-                );
+        MembershipPurchase purchase = new MembershipPurchase(
+                0,
+                userId,
+                membershipId,
+                membership.getPrice(),
+                LocalDateTime.now().withNano(0)
+        );
 
         return purchaseDAO.addMembershipPurchase(purchase);
     }
@@ -106,11 +103,23 @@ public class MembershipService {
     }
 
     /**
+<<<<<<< HEAD
      * Returns membership purchases made during the current calendar year.
      */
     public List<MembershipPurchase> getCurrentYearPurchases() {
         List<MembershipPurchase> purchases =
                 purchaseDAO.getCurrentYearMembershipPurchases();
+=======
+     * Returns only membership purchases from the requested calendar year.
+     */
+    public List<MembershipPurchase> getPurchasesForYear(int year) {
+        if (year < 1 || year > 9998) {
+            return Collections.emptyList();
+        }
+
+        List<MembershipPurchase> purchases =
+                purchaseDAO.getMembershipPurchasesForYear(year);
+>>>>>>> fix/final-review-priority
 
         if (purchases == null) {
             return Collections.emptyList();

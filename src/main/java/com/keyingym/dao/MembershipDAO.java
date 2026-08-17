@@ -27,11 +27,14 @@ public class MembershipDAO {
 
             statement.setString(1, membership.getMembershipType());
             statement.setBigDecimal(2, membership.getPrice());
-
             return statement.executeUpdate() > 0;
 
         } catch (SQLException e) {
+<<<<<<< HEAD
             AppLogger.error("Database transaction error while adding membership.", e);
+=======
+            AppLogger.error("Database transaction error in MembershipDAO.addMembership.", e);
+>>>>>>> fix/final-review-priority
             return false;
         }
     }
@@ -55,7 +58,11 @@ public class MembershipDAO {
             }
 
         } catch (SQLException e) {
+<<<<<<< HEAD
             AppLogger.error("Database transaction error while finding membership: " + membershipId, e);
+=======
+            AppLogger.error("Database transaction error in MembershipDAO.findById.", e);
+>>>>>>> fix/final-review-priority
         }
 
         return null;
@@ -80,7 +87,14 @@ public class MembershipDAO {
             }
 
         } catch (SQLException e) {
+<<<<<<< HEAD
             AppLogger.error("Database transaction error while finding membership type: " + membershipType, e);
+=======
+            AppLogger.error(
+                    "Database transaction error in MembershipDAO.findByMembershipType.",
+                    e
+            );
+>>>>>>> fix/final-review-priority
         }
 
         return null;
@@ -104,7 +118,11 @@ public class MembershipDAO {
             }
 
         } catch (SQLException e) {
+<<<<<<< HEAD
             AppLogger.error("Database transaction error while loading memberships.", e);
+=======
+            AppLogger.error("Database transaction error in MembershipDAO.getAllMemberships.", e);
+>>>>>>> fix/final-review-priority
         }
 
         return memberships;
@@ -124,11 +142,14 @@ public class MembershipDAO {
             statement.setString(1, membership.getMembershipType());
             statement.setBigDecimal(2, membership.getPrice());
             statement.setInt(3, membership.getMembershipId());
-
             return statement.executeUpdate() > 0;
 
         } catch (SQLException e) {
+<<<<<<< HEAD
             AppLogger.error("Database transaction error while updating membership: " + membership.getMembershipId(), e);
+=======
+            AppLogger.error("Database transaction error in MembershipDAO.updateMembership.", e);
+>>>>>>> fix/final-review-priority
             return false;
         }
     }
@@ -140,11 +161,14 @@ public class MembershipDAO {
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setInt(1, membershipId);
-
             return statement.executeUpdate() > 0;
 
         } catch (SQLException e) {
+<<<<<<< HEAD
             AppLogger.error("Database transaction error while deleting membership: " + membershipId, e);
+=======
+            AppLogger.error("Database transaction error in MembershipDAO.deleteMembership.", e);
+>>>>>>> fix/final-review-priority
             return false;
         }
     }

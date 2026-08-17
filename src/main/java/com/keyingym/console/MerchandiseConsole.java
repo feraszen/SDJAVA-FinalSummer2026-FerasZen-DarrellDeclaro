@@ -75,9 +75,12 @@ public class MerchandiseConsole {
         }
     }
 
+<<<<<<< HEAD
     /**
      * Displays merchandise. Admin users also see per-item and total valuation.
      */
+=======
+>>>>>>> fix/final-review-priority
     public void browse(User user) {
         List<Merchandise> merchandise =
                 merchandiseService.getAvailableMerchandise();
@@ -90,6 +93,7 @@ public class MerchandiseConsole {
             return;
         }
 
+<<<<<<< HEAD
         boolean admin = user != null && user.getRole() == UserRole.ADMIN;
         BigDecimal totalInventoryValue = BigDecimal.ZERO;
 
@@ -119,8 +123,30 @@ public class MerchandiseConsole {
 
         if (admin) {
             System.out.println("Total Inventory Valuation: $" + totalInventoryValue);
+=======
+        BigDecimal totalValuation =
+                merchandiseService.calculateInventoryValuation(merchandise);
+
+        for (Merchandise item : merchandise) {
+            BigDecimal price = item.getPrice() == null
+                    ? BigDecimal.ZERO
+                    : item.getPrice();
+
+            BigDecimal itemValuation =
+                    price.multiply(BigDecimal.valueOf(item.getCurrentStock()));
+
+            System.out.println(
+                    "ID: " + item.getMerchId()
+                            + " | Product: " + item.getProductName()
+                            + " | Type: " + item.getType()
+                            + " | Price: $" + price
+                            + " | Stock: " + item.getCurrentStock()
+                            + " | Valuation: $" + itemValuation
+            );
+>>>>>>> fix/final-review-priority
         }
 
+        System.out.println("Total Inventory Valuation: $" + totalValuation);
         System.out.println("-----------------------------------");
 
         if (user != null && user.getRole() != UserRole.ADMIN) {
@@ -157,7 +183,8 @@ public class MerchandiseConsole {
         Integer stock = input.readInteger();
 
         if (productName == null || type == null || price == null
-                || stock == null || price.signum() < 0 || stock < 0) {
+                || stock == null || productName.isBlank() || type.isBlank()
+                || price.signum() < 0 || stock < 0) {
             System.out.println("Invalid merchandise information.");
             return;
         }
@@ -190,8 +217,7 @@ public class MerchandiseConsole {
             return;
         }
 
-        Merchandise existing =
-                merchandiseService.findMerchandiseById(merchId);
+        Merchandise existing = merchandiseService.findMerchandiseById(merchId);
 
         if (existing == null) {
             System.out.println("Merchandise not found.");
@@ -243,8 +269,7 @@ public class MerchandiseConsole {
             return;
         }
 
-        Merchandise merchandise =
-                merchandiseService.findMerchandiseById(merchId);
+        Merchandise merchandise = merchandiseService.findMerchandiseById(merchId);
 
         if (merchandise == null) {
             System.out.println("Merchandise not found.");
@@ -261,17 +286,12 @@ public class MerchandiseConsole {
 
         if (merchandiseService.deleteMerchandise(merchId)) {
             System.out.println("Merchandise deleted successfully.");
-            AppLogger.info(
-                    "Admin override: deleted merchandise ID " + merchId
-            );
+            AppLogger.info("Admin override: deleted merchandise ID " + merchId);
         } else {
             System.out.println("Unable to delete merchandise. Purchase history may prevent deletion.");
         }
     }
 
-    /**
-     * Purchases merchandise for a member or trainer.
-     */
     public void purchase(User user) {
         if (user == null || (user.getRole() != UserRole.MEMBER
                 && user.getRole() != UserRole.TRAINER)) {
@@ -287,10 +307,7 @@ public class MerchandiseConsole {
             return;
         }
 
-        System.out.print(
-                "Enter merchandise ID to purchase or 0 to cancel: "
-        );
-
+        System.out.print("Enter merchandise ID to purchase or 0 to cancel: ");
         Integer merchId = input.readInteger();
 
         if (merchId == null) {
@@ -303,8 +320,7 @@ public class MerchandiseConsole {
             return;
         }
 
-        Merchandise item =
-                merchandiseService.findMerchandiseById(merchId);
+        Merchandise item = merchandiseService.findMerchandiseById(merchId);
 
         if (item == null) {
             System.out.println("Merchandise not found.");

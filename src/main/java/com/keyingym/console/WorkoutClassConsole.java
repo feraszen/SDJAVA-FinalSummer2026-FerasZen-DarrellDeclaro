@@ -26,6 +26,7 @@ public class WorkoutClassConsole {
         this.input = input;
     }
 
+<<<<<<< HEAD
     public void browse(User user) {
         if (user == null || user.getRole() == null) {
             System.out.println("Authentication required.");
@@ -53,24 +54,35 @@ public class WorkoutClassConsole {
             }
 
             System.out.println("-------------------------------------");
+=======
+    /** Displays all workout classes for general browsing or Admin users. */
+    public void browse() {
+        displayClasses(workoutClassService.getSafeWorkoutClasses(),
+                "---------- WORKOUT CLASSES ----------");
+    }
+
+    /** Displays only classes assigned to the logged-in Trainer. */
+    public void browseAssigned(User user) {
+        if (user == null || user.getRole() != UserRole.TRAINER) {
+            System.out.println("Access denied. Trainer access required.");
+>>>>>>> fix/final-review-priority
             return;
         }
 
-        for (WorkoutClass workoutClass : classes) {
-            System.out.println(
-                    "ID: " + workoutClass.getClassId()
-                            + " | Name: " + workoutClass.getClassName()
-                            + " | Description: " + workoutClass.getDescription()
-                            + " | Trainer ID: " + workoutClass.getTrainerId()
-                            + " | Scheduled: " + workoutClass.getScheduledAt()
-            );
-        }
+        List<WorkoutClass> classes =
+                workoutClassService.getWorkoutClassesByTrainerId(user.getUserId());
 
-        System.out.println("-------------------------------------");
+        displayClasses(classes,
+                "------- MY ASSIGNED CLASSES -------");
     }
 
     /**
+<<<<<<< HEAD
      * Backward-compatible browse method. Role-specific workflows should use browse(User).
+=======
+     * Manages workout classes for Admin and Trainer users.
+     * Trainers can manage only classes assigned to themselves.
+>>>>>>> fix/final-review-priority
      */
     public void browse() {
         List<WorkoutClass> classes = workoutClassService.getSafeWorkoutClasses();
@@ -130,7 +142,15 @@ public class WorkoutClassConsole {
 
             switch (option) {
                 case 1:
+<<<<<<< HEAD
                     browse(user);
+=======
+                    if (user.getRole() == UserRole.TRAINER) {
+                        browseAssigned(user);
+                    } else {
+                        browse();
+                    }
+>>>>>>> fix/final-review-priority
                     break;
                 case 2:
                     add(user);
@@ -161,6 +181,7 @@ public class WorkoutClassConsole {
         String description = input.readLine();
 
         Integer trainerId;
+<<<<<<< HEAD
 
         if (user.getRole() == UserRole.ADMIN) {
             System.out.print("Trainer ID: ");
@@ -168,15 +189,28 @@ public class WorkoutClassConsole {
         } else {
             trainerId = user.getUserId();
             System.out.println("Trainer ID: " + trainerId + " (logged-in trainer)");
+=======
+        if (user.getRole() == UserRole.TRAINER) {
+            trainerId = user.getUserId();
+            System.out.println("Trainer ID: " + trainerId);
+        } else {
+            System.out.print("Trainer ID: ");
+            trainerId = input.readInteger();
+>>>>>>> fix/final-review-priority
         }
 
         System.out.print("Scheduled date/time (YYYY-MM-DDTHH:MM): ");
         LocalDateTime scheduledAt = input.readDateTime();
 
+<<<<<<< HEAD
         if (className == null || className.isBlank()
                 || description == null
                 || trainerId == null || trainerId <= 0
                 || scheduledAt == null) {
+=======
+        if (className == null || description == null || trainerId == null
+                || trainerId <= 0 || scheduledAt == null || className.isBlank()) {
+>>>>>>> fix/final-review-priority
             System.out.println("Invalid workout class information.");
             return;
         }
@@ -215,9 +249,13 @@ public class WorkoutClassConsole {
             return;
         }
 
+<<<<<<< HEAD
         if (user.getRole() == UserRole.TRAINER
                 && workoutClass.getTrainerId() != user.getUserId()) {
             System.out.println("Access denied. You can only update your own classes.");
+=======
+        if (!canManageClass(user, workoutClass)) {
+>>>>>>> fix/final-review-priority
             return;
         }
 
@@ -228,6 +266,7 @@ public class WorkoutClassConsole {
         String description = input.readLine();
 
         Integer trainerId;
+<<<<<<< HEAD
 
         if (user.getRole() == UserRole.ADMIN) {
             System.out.print("New trainer ID: ");
@@ -235,6 +274,14 @@ public class WorkoutClassConsole {
         } else {
             trainerId = user.getUserId();
             System.out.println("Trainer ID: " + trainerId + " (logged-in trainer)");
+=======
+        if (user.getRole() == UserRole.TRAINER) {
+            trainerId = user.getUserId();
+            System.out.println("Trainer ID: " + trainerId);
+        } else {
+            System.out.print("New trainer ID: ");
+            trainerId = input.readInteger();
+>>>>>>> fix/final-review-priority
         }
 
         System.out.print("New scheduled date/time (YYYY-MM-DDTHH:MM): ");
@@ -279,9 +326,13 @@ public class WorkoutClassConsole {
             return;
         }
 
+<<<<<<< HEAD
         if (user.getRole() == UserRole.TRAINER
                 && workoutClass.getTrainerId() != user.getUserId()) {
             System.out.println("Access denied. You can only delete your own classes.");
+=======
+        if (!canManageClass(user, workoutClass)) {
+>>>>>>> fix/final-review-priority
             return;
         }
 
@@ -301,5 +352,40 @@ public class WorkoutClassConsole {
         } else {
             System.out.println("Unable to delete workout class.");
         }
+    }
+
+    private boolean canManageClass(User user, WorkoutClass workoutClass) {
+        if (user.getRole() == UserRole.ADMIN) {
+            return true;
+        }
+
+        if (workoutClass.getTrainerId() != user.getUserId()) {
+            System.out.println("Access denied. This class is assigned to another trainer.");
+            return false;
+        }
+
+        return true;
+    }
+
+    private void displayClasses(List<WorkoutClass> classes, String heading) {
+        System.out.println();
+        System.out.println(heading);
+
+        if (classes == null || classes.isEmpty()) {
+            System.out.println("No workout classes found.");
+            return;
+        }
+
+        for (WorkoutClass workoutClass : classes) {
+            System.out.println(
+                    "ID: " + workoutClass.getClassId()
+                            + " | Name: " + workoutClass.getClassName()
+                            + " | Description: " + workoutClass.getDescription()
+                            + " | Trainer ID: " + workoutClass.getTrainerId()
+                            + " | Scheduled: " + workoutClass.getScheduledAt()
+            );
+        }
+
+        System.out.println("-------------------------------------");
     }
 }

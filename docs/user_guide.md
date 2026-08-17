@@ -11,8 +11,15 @@ The main functions are:
 - Membership purchasing and expense tracking.
 - Current-calendar-year membership revenue tracking for Admin users.
 - Workout class scheduling and browsing.
+<<<<<<< HEAD
 - Merchandise inventory, valuation, and purchasing.
 - Text report export for Admin users.
+=======
+- Merchandise inventory and purchasing.
+- Current-calendar-year membership revenue tracking for administrators.
+- Merchandise inventory valuation for administrators.
+- Exporting reports to text files for administrators.
+>>>>>>> fix/final-review-priority
 
 ## 2. User Roles
 
@@ -20,19 +27,37 @@ The main functions are:
 
 - View all users and contact information.
 - Delete users.
+<<<<<<< HEAD
 - View current-calendar-year membership revenue.
 - Manage merchandise inventory and view per-item and total inventory valuation.
 - Manage workout classes.
+=======
+- View membership revenue for the current calendar year.
+- Manage merchandise inventory and view total inventory valuation.
+- Manage all workout classes.
+>>>>>>> fix/final-review-priority
 - Export reports.
 - Log out.
 
 ### Trainer
 
+<<<<<<< HEAD
 - View assigned workout classes.
 - Create, update, and delete workout classes.
+=======
+A Trainer can manage workout classes assigned to that Trainer and purchase gym products or memberships.
+
+Trainer functions include:
+
+- View assigned workout classes only.
+- Create workout classes assigned to the logged-in Trainer.
+- Update or delete classes assigned to the logged-in Trainer.
+>>>>>>> fix/final-review-priority
 - Purchase a gym membership.
 - Browse and purchase merchandise.
 - Log out.
+
+A Trainer cannot update or delete a class assigned to another Trainer.
 
 ### Member
 
@@ -80,7 +105,24 @@ Admins and Trainers can use **Manage Workout Classes** to view, add, update, and
 - Admins can manage all workout classes.
 - Members can use **Browse Workout Classes** without management permissions.
 
+<<<<<<< HEAD
 ## 6. Merchandise
+=======
+**Admin:**
+
+1. Open **Manage Workout Classes**.
+2. Choose View, Add, Update, Delete, or Return.
+3. Admins can manage classes for any valid trainer.
+
+**Trainer:**
+
+1. Open **View Assigned Classes** to see only classes assigned to the logged-in Trainer.
+2. Open **Manage Workout Classes** to view and manage the Trainer's own assigned classes.
+3. When creating a class, the logged-in Trainer is automatically used as the trainer assignment.
+4. A Trainer cannot update or delete another Trainer's class.
+
+When creating or updating a class, the system validates the class name, trainer relationship, and scheduled date/time.
+>>>>>>> fix/final-review-priority
 
 Admins can use **Manage Merchandise Inventory** to view, add, update, and delete merchandise.
 
@@ -93,15 +135,35 @@ Admin inventory displays:
 
 The calculation is:
 
+<<<<<<< HEAD
 ```text
 Inventory Value = Price × Current Stock
 ```
+=======
+1. Open **Manage Merchandise Inventory**.
+2. View current inventory or choose Add, Update, or Delete.
+3. Each item shows price, current stock, and inventory valuation calculated as `price × current stock`.
+4. The bottom of the inventory view shows **Total Inventory Valuation**.
+5. For new merchandise, enter the product name, type, price, and current stock.
+6. For an update, enter the merchandise ID and the new information.
+7. For deletion, enter the merchandise ID and confirm the deletion.
+>>>>>>> fix/final-review-priority
 
 The total valuation is the sum of the current inventory values of all merchandise items.
 
 Trainers and Members can browse and purchase merchandise. Successful purchases reduce available stock.
 
+<<<<<<< HEAD
 ## 7. Report Export
+=======
+### 3.5 Viewing Membership Revenue
+
+Available only to Admins.
+
+The **View Membership Revenue** option reports purchases made during the current calendar year. The report displays the qualifying purchases and the total membership revenue for that year.
+
+### 3.6 Exporting Reports
+>>>>>>> fix/final-review-priority
 
 Only Admin users can export reports.
 
@@ -125,6 +187,12 @@ Generated reports are runtime artifacts and do not need to exist in the reposito
 
 ## 9. Data Safety
 
+<<<<<<< HEAD
 Do not commit real database credentials or other secrets to GitHub. Use local environment configuration for database access.
 
 The SQL test-data script provides sample data for development and demonstration.
+=======
+The project test database scripts provide sample data for development and demonstration.
+
+Database errors are recorded through the application's persistent `AppLogger` instead of relying on console stack traces.
+>>>>>>> fix/final-review-priority
