@@ -35,7 +35,14 @@ public class MerchandisePurchaseDAO {
             return statement.executeUpdate() > 0;
 
         } catch (SQLException e) {
+<<<<<<< HEAD
             AppLogger.error("Database transaction error while adding merchandise purchase.", e);
+=======
+            AppLogger.error(
+                    "Database transaction error in MerchandisePurchaseDAO.addMerchandisePurchase.",
+                    e
+            );
+>>>>>>> fix/final-review-priority
             return false;
         }
     }
@@ -60,7 +67,14 @@ public class MerchandisePurchaseDAO {
             }
 
         } catch (SQLException e) {
+<<<<<<< HEAD
             AppLogger.error("Database transaction error while finding merchandise purchase: " + purchaseId, e);
+=======
+            AppLogger.error(
+                    "Database transaction error in MerchandisePurchaseDAO.findById.",
+                    e
+            );
+>>>>>>> fix/final-review-priority
         }
 
         return null;
@@ -85,7 +99,14 @@ public class MerchandisePurchaseDAO {
             }
 
         } catch (SQLException e) {
+<<<<<<< HEAD
             AppLogger.error("Database transaction error while loading merchandise purchases.", e);
+=======
+            AppLogger.error(
+                    "Database transaction error in MerchandisePurchaseDAO.getAllMerchandisePurchases.",
+                    e
+            );
+>>>>>>> fix/final-review-priority
         }
 
         return purchases;
@@ -114,7 +135,14 @@ public class MerchandisePurchaseDAO {
             }
 
         } catch (SQLException e) {
+<<<<<<< HEAD
             AppLogger.error("Database transaction error while loading merchandise purchases for user: " + userId, e);
+=======
+            AppLogger.error(
+                    "Database transaction error in MerchandisePurchaseDAO.getPurchasesByUserId.",
+                    e
+            );
+>>>>>>> fix/final-review-priority
         }
 
         return purchases;
@@ -130,11 +158,17 @@ public class MerchandisePurchaseDAO {
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setInt(1, purchaseId);
-
             return statement.executeUpdate() > 0;
 
         } catch (SQLException e) {
+<<<<<<< HEAD
             AppLogger.error("Database transaction error while deleting merchandise purchase: " + purchaseId, e);
+=======
+            AppLogger.error(
+                    "Database transaction error in MerchandisePurchaseDAO.deleteMerchandisePurchase.",
+                    e
+            );
+>>>>>>> fix/final-review-priority
             return false;
         }
     }

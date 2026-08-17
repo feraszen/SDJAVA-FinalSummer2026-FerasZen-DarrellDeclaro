@@ -26,25 +26,10 @@ public class WorkoutClassDAO {
         try (Connection connection = DatabaseConnection.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
-            statement.setString(
-                    1,
-                    workoutClass.getClassName()
-            );
-
-            statement.setString(
-                    2,
-                    workoutClass.getDescription()
-            );
-
-            statement.setInt(
-                    3,
-                    workoutClass.getTrainerId()
-            );
-
-            statement.setObject(
-                    4,
-                    workoutClass.getScheduledAt()
-            );
+            statement.setString(1, workoutClass.getClassName());
+            statement.setString(2, workoutClass.getDescription());
+            statement.setInt(3, workoutClass.getTrainerId());
+            statement.setObject(4, workoutClass.getScheduledAt());
 
             return statement.executeUpdate() > 0;
 
@@ -70,7 +55,6 @@ public class WorkoutClassDAO {
             statement.setInt(1, classId);
 
             try (ResultSet resultSet = statement.executeQuery()) {
-
                 if (resultSet.next()) {
                     return mapWorkoutClass(resultSet);
                 }
@@ -100,9 +84,7 @@ public class WorkoutClassDAO {
              ResultSet resultSet = statement.executeQuery()) {
 
             while (resultSet.next()) {
-                workoutClasses.add(
-                        mapWorkoutClass(resultSet)
-                );
+                workoutClasses.add(mapWorkoutClass(resultSet));
             }
 
         } catch (SQLException e) {
@@ -116,10 +98,17 @@ public class WorkoutClassDAO {
     }
 
     /**
+<<<<<<< HEAD
      * Returns only the workout classes assigned to the specified trainer.
      *
      * @param trainerId trainer user ID
      * @return workout classes assigned to the trainer
+=======
+     * Returns only classes assigned to the supplied trainer.
+     *
+     * @param trainerId trainer user ID
+     * @return classes assigned to the trainer, ordered by scheduled time
+>>>>>>> fix/final-review-priority
      */
     public List<WorkoutClass> getWorkoutClassesByTrainerId(int trainerId) {
         String sql = """
@@ -128,6 +117,7 @@ public class WorkoutClassDAO {
                 WHERE trainer_id = ?
                 ORDER BY scheduled_at ASC
                 """;
+<<<<<<< HEAD
 
         List<WorkoutClass> workoutClasses = new ArrayList<>();
 
@@ -157,7 +147,33 @@ public class WorkoutClassDAO {
 
     public boolean updateWorkoutClass(
             WorkoutClass workoutClass) {
+=======
+>>>>>>> fix/final-review-priority
 
+        List<WorkoutClass> workoutClasses = new ArrayList<>();
+
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setInt(1, trainerId);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    workoutClasses.add(mapWorkoutClass(resultSet));
+                }
+            }
+
+        } catch (SQLException e) {
+            AppLogger.error(
+                    "Database transaction error in WorkoutClassDAO.getWorkoutClassesByTrainerId.",
+                    e
+            );
+        }
+
+        return workoutClasses;
+    }
+
+    public boolean updateWorkoutClass(WorkoutClass workoutClass) {
         String sql = """
                 UPDATE workout_classes
                 SET class_name = ?,
@@ -168,33 +184,13 @@ public class WorkoutClassDAO {
                 """;
 
         try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement statement =
-                     connection.prepareStatement(sql)) {
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
-            statement.setString(
-                    1,
-                    workoutClass.getClassName()
-            );
-
-            statement.setString(
-                    2,
-                    workoutClass.getDescription()
-            );
-
-            statement.setInt(
-                    3,
-                    workoutClass.getTrainerId()
-            );
-
-            statement.setObject(
-                    4,
-                    workoutClass.getScheduledAt()
-            );
-
-            statement.setInt(
-                    5,
-                    workoutClass.getClassId()
-            );
+            statement.setString(1, workoutClass.getClassName());
+            statement.setString(2, workoutClass.getDescription());
+            statement.setInt(3, workoutClass.getTrainerId());
+            statement.setObject(4, workoutClass.getScheduledAt());
+            statement.setInt(5, workoutClass.getClassId());
 
             return statement.executeUpdate() > 0;
 
@@ -208,16 +204,12 @@ public class WorkoutClassDAO {
     }
 
     public boolean deleteWorkoutClass(int classId) {
-
-        String sql =
-                "DELETE FROM workout_classes WHERE class_id = ?";
+        String sql = "DELETE FROM workout_classes WHERE class_id = ?";
 
         try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement statement =
-                     connection.prepareStatement(sql)) {
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setInt(1, classId);
-
             return statement.executeUpdate() > 0;
 
         } catch (SQLException e) {
@@ -229,29 +221,13 @@ public class WorkoutClassDAO {
         }
     }
 
-    private WorkoutClass mapWorkoutClass(
-            ResultSet resultSet)
-            throws SQLException {
+    private WorkoutClass mapWorkoutClass(ResultSet resultSet) throws SQLException {
+        WorkoutClass workoutClass = new WorkoutClass();
 
-        WorkoutClass workoutClass =
-                new WorkoutClass();
-
-        workoutClass.setClassId(
-                resultSet.getInt("class_id")
-        );
-
-        workoutClass.setClassName(
-                resultSet.getString("class_name")
-        );
-
-        workoutClass.setDescription(
-                resultSet.getString("description")
-        );
-
-        workoutClass.setTrainerId(
-                resultSet.getInt("trainer_id")
-        );
-
+        workoutClass.setClassId(resultSet.getInt("class_id"));
+        workoutClass.setClassName(resultSet.getString("class_name"));
+        workoutClass.setDescription(resultSet.getString("description"));
+        workoutClass.setTrainerId(resultSet.getInt("trainer_id"));
         workoutClass.setScheduledAt(
                 resultSet.getObject(
                         "scheduled_at",

@@ -1,6 +1,7 @@
 package com.keyingym.console;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 import com.keyingym.config.AppLogger;
@@ -18,9 +19,13 @@ public class AdminConsole {
     private final MerchandiseConsole merchandiseConsole;
     private final WorkoutClassConsole workoutClassConsole;
 
-    public AdminConsole(UserService userService, MembershipService membershipService,
-                        MerchandiseConsole merchandiseConsole, WorkoutClassConsole workoutClassConsole,
-                        ConsoleInput input) {
+    public AdminConsole(
+            UserService userService,
+            MembershipService membershipService,
+            MerchandiseConsole merchandiseConsole,
+            WorkoutClassConsole workoutClassConsole,
+            ConsoleInput input
+    ) {
         this.userService = userService;
         this.membershipService = membershipService;
         this.merchandiseConsole = merchandiseConsole;
@@ -30,38 +35,65 @@ public class AdminConsole {
 
     public void viewAllUsers(User user) {
         if (!isAdmin(user)) return;
+
         List<User> users = userService.getAllUsers();
         System.out.println();
         System.out.println("----------- ALL USERS -----------");
-        if (users.isEmpty()) { System.out.println("No users found."); return; }
-        for (User currentUser : users) {
-            System.out.println("ID: " + currentUser.getUserId()
-                    + " | Username: " + currentUser.getUsername()
-                    + " | Email: " + currentUser.getEmail()
-                    + " | Phone: " + currentUser.getPhone()
-                    + " | Role: " + currentUser.getRole());
+
+        if (users.isEmpty()) {
+            System.out.println("No users found.");
+            return;
         }
+
+        for (User currentUser : users) {
+            System.out.println(
+                    "ID: " + currentUser.getUserId()
+                            + " | Username: " + currentUser.getUsername()
+                            + " | Email: " + currentUser.getEmail()
+                            + " | Phone: " + currentUser.getPhone()
+                            + " | Role: " + currentUser.getRole()
+            );
+        }
+
         System.out.println("---------------------------------");
     }
 
     public void deleteUser(User user) {
         if (!isAdmin(user)) return;
+
         System.out.print("Enter user ID to delete: ");
         Integer userId = input.readInteger();
-        if (userId == null || userId <= 0) { System.out.println("Invalid user ID."); return; }
+
+        if (userId == null || userId <= 0) {
+            System.out.println("Invalid user ID.");
+            return;
+        }
+
         User targetUser = userService.findUserById(userId);
-        if (targetUser == null) { System.out.println("User not found."); return; }
+        if (targetUser == null) {
+            System.out.println("User not found.");
+            return;
+        }
+
         if (targetUser.getUserId() == user.getUserId()) {
             System.out.println("You cannot delete the currently logged-in user.");
             return;
         }
+
         System.out.println("User found: " + targetUser.getUsername());
         System.out.print("Confirm deletion? Enter Y to continue: ");
         String confirmation = input.readLine();
-        if (!"Y".equalsIgnoreCase(confirmation)) { System.out.println("Deletion cancelled."); return; }
+
+        if (!"Y".equalsIgnoreCase(confirmation)) {
+            System.out.println("Deletion cancelled.");
+            return;
+        }
+
         if (userService.deleteUser(userId)) {
             System.out.println("User deleted successfully.");
-            AppLogger.info("Admin override: deleted user : " + targetUser.getUsername());
+            AppLogger.info(
+                    "Admin override: deleted user : " + targetUser.getUsername()
+            );
         } else {
             System.out.println("Unable to delete the user. Purchase history may prevent deletion.");
         }
@@ -72,31 +104,69 @@ public class AdminConsole {
      */
     public void viewMembershipRevenue(User user) {
         if (!isAdmin(user)) return;
+<<<<<<< HEAD
         List<MembershipPurchase> purchases = membershipService.getCurrentYearPurchases();
+=======
+
+        int currentYear = LocalDate.now().getYear();
+        List<MembershipPurchase> purchases =
+                membershipService.getPurchasesForYear(currentYear);
+
+>>>>>>> fix/final-review-priority
         BigDecimal totalRevenue = BigDecimal.ZERO;
+
         System.out.println();
+<<<<<<< HEAD
         System.out.println("--- CURRENT YEAR MEMBERSHIP REVENUE ---");
         if (purchases.isEmpty()) {
             System.out.println("No membership purchases found for the current year.");
             System.out.println("Current Year Membership Revenue: $0");
             return;
         }
+=======
+        System.out.println("--- MEMBERSHIP REVENUE " + currentYear + " ---");
+
+        if (purchases.isEmpty()) {
+            System.out.println("No membership purchases found for " + currentYear + ".");
+            System.out.println("Total Membership Revenue: $0.00");
+            System.out.println("----------------------------------");
+            return;
+        }
+
+>>>>>>> fix/final-review-priority
         for (MembershipPurchase purchase : purchases) {
             BigDecimal price = purchase.getPrice();
-            if (price == null) price = BigDecimal.ZERO;
+            if (price == null) {
+                price = BigDecimal.ZERO;
+            }
+
             totalRevenue = totalRevenue.add(price);
-            System.out.println("Purchase ID: " + purchase.getPurchaseId()
-                    + " | User ID: " + purchase.getUserId()
-                    + " | Membership ID: " + purchase.getMembershipId()
-                    + " | Price: $" + price
-                    + " | Purchased At: " + purchase.getPurchasedAt());
+
+            System.out.println(
+                    "Purchase ID: " + purchase.getPurchaseId()
+                            + " | User ID: " + purchase.getUserId()
+                            + " | Membership ID: " + purchase.getMembershipId()
+                            + " | Price: $" + price
+                            + " | Purchased At: " + purchase.getPurchasedAt()
+            );
         }
+<<<<<<< HEAD
         System.out.println("Current Year Membership Revenue: $" + totalRevenue);
         System.out.println("----------------------------------------");
+=======
+
+        System.out.println("Total Membership Revenue: $" + totalRevenue);
+        System.out.println("----------------------------------");
+>>>>>>> fix/final-review-priority
     }
 
-    public MerchandiseConsole merchandise() { return merchandiseConsole; }
-    public WorkoutClassConsole workouts() { return workoutClassConsole; }
+    public MerchandiseConsole merchandise() {
+        return merchandiseConsole;
+    }
+
+    public WorkoutClassConsole workouts() {
+        return workoutClassConsole;
+    }
 
     private boolean isAdmin(User user) {
         if (user == null || user.getRole() != UserRole.ADMIN) {

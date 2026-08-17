@@ -23,17 +23,38 @@ class MembershipServiceTest {
         FakeMembershipDAO membershipDAO = new FakeMembershipDAO();
         FakeMembershipPurchaseDAO purchaseDAO = new FakeMembershipPurchaseDAO();
 
+<<<<<<< HEAD
         membershipDAO.memberships.add(
                 new Membership(10, "Monthly", new BigDecimal("45.00"))
         );
 
         MembershipService service = new MembershipService(membershipDAO, purchaseDAO);
+=======
+        Membership membership = new Membership(
+                10,
+                "Monthly",
+                new BigDecimal("45.00")
+        );
+        membershipDAO.memberships.add(membership);
+
+        MembershipService service = new MembershipService(
+                membershipDAO,
+                purchaseDAO
+        );
+>>>>>>> fix/final-review-priority
 
         assertTrue(service.purchaseMembership(25, 10));
         assertNotNull(purchaseDAO.lastPurchase);
         assertEquals(25, purchaseDAO.lastPurchase.getUserId());
         assertEquals(10, purchaseDAO.lastPurchase.getMembershipId());
+<<<<<<< HEAD
         assertEquals(new BigDecimal("45.00"), purchaseDAO.lastPurchase.getPrice());
+=======
+        assertEquals(
+                new BigDecimal("45.00"),
+                purchaseDAO.lastPurchase.getPrice()
+        );
+>>>>>>> fix/final-review-priority
         assertNotNull(purchaseDAO.lastPurchase.getPurchasedAt());
     }
 
@@ -76,7 +97,15 @@ class MembershipServiceTest {
 
         purchaseDAO.purchases.add(
                 new MembershipPurchase(
+<<<<<<< HEAD
                         1, 25, 10, new BigDecimal("45.00"), LocalDateTime.now()
+=======
+                        1,
+                        25,
+                        10,
+                        new BigDecimal("45.00"),
+                        LocalDateTime.now()
+>>>>>>> fix/final-review-priority
                 )
         );
 
@@ -86,6 +115,44 @@ class MembershipServiceTest {
         assertEquals(1, purchases.size());
         assertEquals(25, purchases.get(0).getUserId());
         assertEquals(10, purchases.get(0).getMembershipId());
+<<<<<<< HEAD
+=======
+    }
+
+    @Test
+    void shouldReturnPurchasesForRequestedCalendarYear() {
+        FakeMembershipDAO membershipDAO = new FakeMembershipDAO();
+        FakeMembershipPurchaseDAO purchaseDAO = new FakeMembershipPurchaseDAO();
+
+        int currentYear = LocalDateTime.now().getYear();
+
+        MembershipPurchase currentYearPurchase = new MembershipPurchase(
+                1,
+                25,
+                10,
+                new BigDecimal("45.00"),
+                LocalDateTime.of(currentYear, 6, 1, 10, 0)
+        );
+
+        MembershipPurchase previousYearPurchase = new MembershipPurchase(
+                2,
+                25,
+                10,
+                new BigDecimal("450.00"),
+                LocalDateTime.of(currentYear - 1, 6, 1, 10, 0)
+        );
+
+        purchaseDAO.purchases.add(currentYearPurchase);
+        purchaseDAO.purchases.add(previousYearPurchase);
+
+        MembershipService service = new MembershipService(membershipDAO, purchaseDAO);
+        List<MembershipPurchase> purchases =
+                service.getPurchasesForYear(currentYear);
+
+        assertEquals(1, purchases.size());
+        assertEquals(1, purchases.get(0).getPurchaseId());
+        assertEquals(currentYear, purchases.get(0).getPurchasedAt().getYear());
+>>>>>>> fix/final-review-priority
     }
 
     @Test
@@ -100,6 +167,7 @@ class MembershipServiceTest {
         assertEquals(0, purchaseDAO.getPurchasesCallCount);
     }
 
+<<<<<<< HEAD
     @Test
     void shouldReturnOnlyCurrentYearPurchasesForRevenue() {
         FakeMembershipDAO membershipDAO = new FakeMembershipDAO();
@@ -150,6 +218,8 @@ class MembershipServiceTest {
         ));
     }
 
+=======
+>>>>>>> fix/final-review-priority
     private static class FakeMembershipDAO extends MembershipDAO {
         private final List<Membership> memberships = new ArrayList<>();
 
@@ -190,11 +260,18 @@ class MembershipServiceTest {
         }
 
         @Override
+<<<<<<< HEAD
         public List<MembershipPurchase> getCurrentYearMembershipPurchases() {
             int currentYear = java.time.LocalDate.now().getYear();
             return purchases.stream()
                     .filter(purchase -> purchase.getPurchasedAt() != null)
                     .filter(purchase -> purchase.getPurchasedAt().getYear() == currentYear)
+=======
+        public List<MembershipPurchase> getMembershipPurchasesForYear(int year) {
+            return purchases.stream()
+                    .filter(item -> item.getPurchasedAt() != null)
+                    .filter(item -> item.getPurchasedAt().getYear() == year)
+>>>>>>> fix/final-review-priority
                     .toList();
         }
     }

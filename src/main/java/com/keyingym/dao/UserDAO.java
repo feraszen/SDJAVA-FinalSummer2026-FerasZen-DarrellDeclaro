@@ -39,7 +39,11 @@ public class UserDAO {
             return statement.executeUpdate() > 0;
 
         } catch (SQLException e) {
+<<<<<<< HEAD
             AppLogger.error("Database transaction error while adding user.", e);
+=======
+            AppLogger.error("Database transaction error in UserDAO.addUser.", e);
+>>>>>>> fix/final-review-priority
             return false;
         }
     }
@@ -63,7 +67,11 @@ public class UserDAO {
             }
 
         } catch (SQLException e) {
+<<<<<<< HEAD
             AppLogger.error("Database transaction error while finding user: " + userId, e);
+=======
+            AppLogger.error("Database transaction error in UserDAO.findById.", e);
+>>>>>>> fix/final-review-priority
         }
 
         return null;
@@ -88,7 +96,11 @@ public class UserDAO {
             }
 
         } catch (SQLException e) {
+<<<<<<< HEAD
             AppLogger.error("Database transaction error while finding username: " + username, e);
+=======
+            AppLogger.error("Database transaction error in UserDAO.findByUsername.", e);
+>>>>>>> fix/final-review-priority
         }
 
         return null;
@@ -112,7 +124,11 @@ public class UserDAO {
             }
 
         } catch (SQLException e) {
+<<<<<<< HEAD
             AppLogger.error("Database transaction error while loading users.", e);
+=======
+            AppLogger.error("Database transaction error in UserDAO.getAllUsers.", e);
+>>>>>>> fix/final-review-priority
         }
 
         return users;
@@ -144,7 +160,11 @@ public class UserDAO {
             return statement.executeUpdate() > 0;
 
         } catch (SQLException e) {
+<<<<<<< HEAD
             AppLogger.error("Database transaction error while updating user: " + user.getUserId(), e);
+=======
+            AppLogger.error("Database transaction error in UserDAO.updateUser.", e);
+>>>>>>> fix/final-review-priority
             return false;
         }
     }
@@ -156,11 +176,14 @@ public class UserDAO {
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setInt(1, userId);
-
             return statement.executeUpdate() > 0;
 
         } catch (SQLException e) {
+<<<<<<< HEAD
             AppLogger.error("Database transaction error while deleting user: " + userId, e);
+=======
+            AppLogger.error("Database transaction error in UserDAO.deleteUser.", e);
+>>>>>>> fix/final-review-priority
             return false;
         }
     }
